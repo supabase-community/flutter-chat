@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_quickstart/pages/account_page.dart';
 import 'package:supabase_quickstart/pages/login_page.dart';
 import 'package:supabase_quickstart/pages/splash_page.dart';
+import 'package:supabase_quickstart/pages/threads_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,10 +13,13 @@ Future<void> main() async {
     url: '[YOUR_SUPABASE_URL]',
     anonKey: '[YOUR_SUPABASE_ANNON_KEY]',
   );
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
+/// Entry of the entire app
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -36,9 +40,10 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: <String, WidgetBuilder>{
-        '/': (_) => const SplashPage(),
-        '/login': (_) => const LoginPage(),
-        '/account': (_) => const AccountPage(),
+        SplashPage.route: (_) => const SplashPage(),
+        LoginPage.route: (_) => const LoginPage(),
+        AccountPage.route: (_) => const AccountPage(),
+        ThreadsPage.route: (_) => const ThreadsPage(),
       },
     );
   }

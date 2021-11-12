@@ -5,6 +5,7 @@ import 'package:supabase_quickstart/components/auth_state.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
 class LoginPage extends StatefulWidget {
+  static const route = '/login';
   const LoginPage({Key? key}) : super(key: key);
 
   @override
@@ -27,9 +28,7 @@ class _LoginPageState extends AuthState<LoginPage> {
                 : 'io.supabase.flutterquickstart://login-callback/'));
     final error = response.error;
     if (error != null) {
-      if (mounted) {
-        context.showErrorSnackBar(message: error.message);
-      }
+      context.showErrorSnackBar(message: error.message);
     } else {
       if (mounted) {
         context.showSnackBar(message: 'Check your email for login link!');

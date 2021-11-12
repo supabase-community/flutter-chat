@@ -5,6 +5,7 @@ import 'package:supabase_quickstart/components/avatar.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
 class AccountPage extends StatefulWidget {
+  static const route = '/account';
   const AccountPage({Key? key}) : super(key: key);
 
   @override
@@ -31,11 +32,7 @@ class _AccountPageState extends AuthRequiredState<AccountPage> {
         .execute();
     final error = response.error;
     if (error != null && response.status != 406) {
-      if (mounted) {
-        return context.showErrorSnackBar(message: error.message);
-      } else {
-        return;
-      }
+      return context.showErrorSnackBar(message: error.message);
     }
     final data = response.data as Map<String, dynamic>?;
     if (data != null) {
