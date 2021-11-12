@@ -38,13 +38,7 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: '/',
-      routes: <String, WidgetBuilder>{
-        SplashPage.route: (_) => const SplashPage(),
-        LoginPage.route: (_) => const LoginPage(),
-        AccountPage.route: (_) => const AccountPage(),
-        ThreadsPage.route: (_) => const ThreadsPage(),
-      },
+      home: const SplashPage(),
     );
   }
 }

@@ -5,8 +5,13 @@ import 'package:supabase_quickstart/components/auth_state.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
 class LoginPage extends StatefulWidget {
-  static const route = '/login';
   const LoginPage({Key? key}) : super(key: key);
+
+  static Route<void> route() {
+    return MaterialPageRoute(builder: (context) {
+      return const LoginPage();
+    });
+  }
 
   @override
   _LoginPageState createState() => _LoginPageState();

@@ -5,8 +5,13 @@ import 'package:supabase_quickstart/components/avatar.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
 class AccountPage extends StatefulWidget {
-  static const route = '/account';
   const AccountPage({Key? key}) : super(key: key);
+
+  static Route<void> route() {
+    return MaterialPageRoute(builder: (context) {
+      return const AccountPage();
+    });
+  }
 
   @override
   _AccountPageState createState() => _AccountPageState();
