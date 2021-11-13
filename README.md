@@ -60,7 +60,7 @@ create table if not exists public.messages (
     id uuid not null primary key DEFAULT uuid_generate_v4 (),
     user_id uuid references public.users on delete cascade not null,
     room_id uuid references public.rooms on delete cascade not null,
-    message text not null,
+    text text not null,
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null
 );
 comment on table public.messages is 'Holds individual messages within a chat room.';
