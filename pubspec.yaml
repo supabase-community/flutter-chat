@@ -1,5 +1,5 @@
 name: supabase_quickstart
-description: Sample app on how to get started with Supabase on Flutter.
+description: Sample chat app using Supabase and Flutter
 
 publish_to: 'none'
 
@@ -14,7 +14,7 @@ dependencies:
 
   image_picker: ^0.8.4
   supabase_flutter: ^0.2.9
-  flutter_bloc: ^7.3.3
+  rxdart: ^0.27.2
 
 dev_dependencies:
   flutter_test:

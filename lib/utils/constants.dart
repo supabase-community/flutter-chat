@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 final supabase = Supabase.instance.client;
 
+const preloader = Center(child: CircularProgressIndicator());
+
 extension ShowSnackBar on BuildContext {
   void showSnackBar({
     required String message,

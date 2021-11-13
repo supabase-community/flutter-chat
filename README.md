@@ -6,8 +6,6 @@
 create table if not exists public.users (
     id uuid references auth.users on delete cascade not null primary key,
     name varchar(18) not null unique,
-    description varchar(320) not null,
-    image_url text,
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
     constraint username_validation check (char_length(name) >= 3)
 );
