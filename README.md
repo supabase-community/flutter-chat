@@ -19,6 +19,7 @@ create policy "Can insert user" on public.users for insert with check (auth.uid(
 create policy "Can update user" on public.users for update using (auth.uid() = id) with check (auth.uid() = id);
 create policy "Can delete user" on public.users for delete using (auth.uid() = id);
 
+
 create table if not exists public.rooms (
     id uuid not null primary key DEFAULT uuid_generate_v4 (),
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null
@@ -26,7 +27,15 @@ create table if not exists public.rooms (
 comment on table public.rooms is 'Holds chat rooms';
 
 alter table public.rooms enable row level security;
-create policy "rooms are viewable by everyone. " on public.rooms for select using (true);
+create policy "rooms are viewable by everyone. " on public.rooms for select using (
+    exists(
+        select 1
+        from user_room
+        where rooms.id = user_room.room_id
+        and user_room.user_id = auth.uid()
+    )
+);
+
 
 create table if not exists public.user_room (
     user_id uuid references public.users on delete cascade not null,
@@ -37,10 +46,15 @@ create table if not exists public.user_room (
 comment on table public.user_room is 'Relational table of users and rooms.';
 
 alter table public.user_room enable row level security;
-create policy "Only the participants can view who is in the room" on public.user_room for select using ();
-create policy "Can insert rooms" on public.user_room for insert with check (auth.uid() = user_id);
-create policy "Can update rooms" on public.user_room for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create policy "Can delete rooms" on public.user_room for delete using (auth.uid() = user_id);
+create policy "Only the participants can view who is in the room" on public.user_room for select using (
+    exists(
+        select 1
+        from rooms
+        where rooms.id = user_room.room_id
+        and user_room.user_id = auth.uid()
+    )
+);
+
 
 create table if not exists public.messages (
     id uuid not null primary key DEFAULT uuid_generate_v4 (),
@@ -52,8 +66,21 @@ create table if not exists public.messages (
 comment on table public.messages is 'Holds individual messages within a chat room.';
 
 alter table public.messages enable row level security;
-create policy "rooms are viewable by everyone. " on public.messages for select using (true);
-create policy "Can insert rooms" on public.messages for insert with check (auth.uid() = user_id);
-create policy "Can update rooms" on public.messages for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create policy "Can delete rooms" on public.messages for delete using (auth.uid() = user_id);
+create policy "Users can view messages on rooms they are in." on public.messages for select using (
+    exists(
+        select 1
+        from user_room
+        where messages.room_id = user_room.room_id
+        and user_room.user_id = auth.uid()
+    )
+);
+create policy "Users can insert messages on rooms they are in." on public.messages for insert with check (
+    auth.uid() = user_id
+    && exists(
+        select 1
+        from user_room
+        where messages.room_id = user_room.room_id
+        and user_room.user_id = auth.uid()
+    )
+);
 ```
