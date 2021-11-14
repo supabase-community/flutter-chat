@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:rxdart/subjects.dart';
 import 'package:supabase_quickstart/models/app_user.dart';
+import 'package:supabase_quickstart/models/room.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
 /// Data store to store in memory app data
@@ -17,8 +18,9 @@ class Store {
 
   /// Map of app users cache in memory with user_id as the key
   final Map<String, AppUser> _appUsers = {};
-  final _appUsersController = BehaviorSubject<Map<String, AppUser>>();
-  Stream<Map<String, AppUser>> get appUsersStream => _appUsersController.stream;
+  final _appUsersStreamController = BehaviorSubject<Map<String, AppUser>>();
+  Stream<Map<String, AppUser>> get appUsersStream =>
+      _appUsersStreamController.stream;
   final Map<String, StreamSubscription<AppUser>> _appUserSubscriptions = {};
 
   void getProfile(String userId) {
@@ -32,7 +34,7 @@ class Store {
         .map((data) => AppUser.fromMap(data.first))
         .listen((appUser) {
       _appUsers[userId] = appUser;
-      _appUsersController.add(_appUsers);
+      _appUsersStreamController.add(_appUsers);
     });
   }
 
@@ -41,10 +43,27 @@ class Store {
     required String name,
   }) async {
     _appUsers[userId] = _appUsers[userId]!.copyWith(name: name);
-    _appUsersController.add(_appUsers);
+    _appUsersStreamController.add(_appUsers);
     final updates = {'id': userId, 'username': name};
     final response = await supabase.from('profiles').upsert(updates).execute();
     final error = response.error;
-    if (error != null) _appUsersController.addError(error);
+    if (error != null) _appUsersStreamController.addError(error);
+  }
+
+  /// List of rooms
+  List<Room> _rooms = [];
+  final _roomsController = BehaviorSubject<List<Room>>();
+  Stream<List<Room>> get roomStream => _roomsController.stream;
+
+  void getRooms() {
+    supabase
+        .from('rooms')
+        .stream()
+        .execute()
+        .map((data) => data.map(Room.fromMap).toList())
+        .listen((rooms) {
+      _rooms = rooms;
+      _roomsController.add(_rooms);
+    });
   }
 }
