@@ -54,8 +54,13 @@ class Store {
   List<Room> _rooms = [];
   final _roomsController = BehaviorSubject<List<Room>>();
   Stream<List<Room>> get roomStream => _roomsController.stream;
+  bool _haveCalledGetRooms = false;
 
   void getRooms() {
+    if (_haveCalledGetRooms) {
+      return;
+    }
+    _haveCalledGetRooms = true;
     supabase
         .from('rooms')
         .stream()

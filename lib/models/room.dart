@@ -1,23 +1,25 @@
 import 'dart:convert';
 
 import 'package:supabase_quickstart/models/app_user.dart';
+import 'package:supabase_quickstart/models/message.dart';
 
 class Room {
   Room({
     required this.id,
     required this.createdAt,
     required this.participants,
+    this.lastMessage,
   });
 
   final String id;
   final DateTime createdAt;
   final List<AppUser> participants;
+  final Message? lastMessage;
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'createdAt': createdAt.millisecondsSinceEpoch,
-      'participants': participants.map((x) => x.toMap()).toList(),
     };
   }
 
@@ -25,12 +27,25 @@ class Room {
     return Room(
       id: map['id'],
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
-      participants: List<AppUser>.from(
-          map['participants']?.map((x) => AppUser.fromMap(x))),
+      participants: [],
     );
   }
 
   String toJson() => json.encode(toMap());
 
   factory Room.fromJson(String source) => Room.fromMap(json.decode(source));
+
+  Room copyWith({
+    String? id,
+    DateTime? createdAt,
+    List<AppUser>? participants,
+    Message? lastMessage,
+  }) {
+    return Room(
+      id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      participants: participants ?? this.participants,
+      lastMessage: lastMessage ?? this.lastMessage,
+    );
+  }
 }
