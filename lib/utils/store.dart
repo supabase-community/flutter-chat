@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:rxdart/subjects.dart';
 import 'package:supabase_quickstart/models/app_user.dart';
+import 'package:supabase_quickstart/models/message.dart';
 import 'package:supabase_quickstart/models/room.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
@@ -70,5 +71,17 @@ class Store {
       _rooms = rooms;
       _roomsController.add(_rooms);
     });
+  }
+
+  Stream<List<Message>> getMessagesStream(String roomId) {
+    return supabase
+        .from('messages:room_id=eq.$roomId')
+        .stream()
+        .execute()
+        .map((data) => data.map((row) {
+              final message = Message.fromMap(row);
+              getProfile(message.userId);
+              return message;
+            }).toList());
   }
 }
