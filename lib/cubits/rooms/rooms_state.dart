@@ -1,4 +1,4 @@
-part of 'room_cubit.dart';
+part of 'rooms_cubit.dart';
 
 @immutable
 abstract class RoomState {}

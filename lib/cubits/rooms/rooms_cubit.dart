@@ -8,7 +8,7 @@ import 'package:supabase_quickstart/models/message.dart';
 import 'package:supabase_quickstart/models/room.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
-part 'room_state.dart';
+part 'rooms_state.dart';
 
 class RoomCubit extends Cubit<RoomState> {
   RoomCubit() : super(RoomInitial());

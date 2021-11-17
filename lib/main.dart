@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:supabase_quickstart/pages/account_page.dart';
-import 'package:supabase_quickstart/pages/login_page.dart';
+import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_quickstart/cubits/rooms/rooms_cubit.dart';
 import 'package:supabase_quickstart/pages/splash_page.dart';
-import 'package:supabase_quickstart/pages/rooms_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,23 +22,29 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Supabase Flutter',
-      theme: ThemeData.dark().copyWith(
-        primaryColor: Colors.green,
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            primary: Colors.green,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AppUserCubit>(create: (context) => AppUserCubit()),
+        BlocProvider<RoomCubit>(create: (context) => RoomCubit()),
+      ],
+      child: MaterialApp(
+        title: 'SupaChat',
+        theme: ThemeData.dark().copyWith(
+          primaryColor: Colors.green,
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              primary: Colors.green,
+            ),
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              onPrimary: Colors.white,
+              primary: Colors.green,
+            ),
           ),
         ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            onPrimary: Colors.white,
-            primary: Colors.green,
-          ),
-        ),
+        home: const SplashPage(),
       ),
-      home: const SplashPage(),
     );
   }
 }

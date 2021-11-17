@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
-import 'package:supabase_quickstart/cubits/room/room_cubit.dart';
+import 'package:supabase_quickstart/cubits/rooms/rooms_cubit.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
 /// Displays the past chat threads
