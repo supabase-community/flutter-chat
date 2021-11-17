@@ -13,7 +13,7 @@ class Room {
 
   final String id;
   final DateTime createdAt;
-  final List<AppUser> participants;
+  final List<String> participants;
   final Message? lastMessage;
 
   Map<String, dynamic> toMap() {
@@ -38,7 +38,7 @@ class Room {
   Room copyWith({
     String? id,
     DateTime? createdAt,
-    List<AppUser>? participants,
+    List<String>? participants,
     Message? lastMessage,
   }) {
     return Room(

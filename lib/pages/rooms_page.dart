@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_quickstart/models/room.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_quickstart/cubits/room/room_cubit.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
-import 'package:supabase_quickstart/utils/store.dart';
 
 /// Displays the past chat threads
 class RoomsPage extends StatelessWidget {
   const RoomsPage({Key? key}) : super(key: key);
-
-  static Route<void> route() {
-    Store().getRooms();
-    return MaterialPageRoute(builder: (context) {
-      return const RoomsPage();
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,28 +14,42 @@ class RoomsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Chats'),
       ),
-      body: StreamBuilder<List<Room>>(
-        stream: Store().roomStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(child: Text(snapshot.error.toString()));
-          }
-          if (snapshot.connectionState != ConnectionState.active) {
+      body: BlocBuilder<RoomCubit, RoomState>(
+        builder: (context, state) {
+          if (state is RoomInitial) {
             return preloader;
-          }
-          final rooms = snapshot.data!;
-          return ListView.builder(itemBuilder: (context, index) {
-            final room = rooms[index];
-            return ListTile(
-              leading: CircleAvatar(
-                child: Text(room.participants.first.name),
-              ),
-              title: Text(room.participants.first.name),
-              subtitle: room.lastMessage != null
-                  ? Text(room.lastMessage!.text)
-                  : null,
+          } else if (state is RoomLoaded) {
+            final rooms = state.rooms;
+            return BlocBuilder<AppUserCubit, AppUserState>(
+              builder: (context, state) {
+                if (state is AppUserLoaded) {
+                  final self = state.self;
+                  final appUsers = state.appUsers;
+                  return ListView.builder(itemBuilder: (context, index) {
+                    final room = rooms[index];
+                    final opponent = appUsers[room.participants
+                        .singleWhere((element) => element == self.id)];
+
+                    return ListTile(
+                      leading: CircleAvatar(
+                        child:
+                            opponent == null ? preloader : Text(opponent.name),
+                      ),
+                      title: opponent == null ? null : Text(opponent.name),
+                      subtitle: room.lastMessage != null
+                          ? Text(room.lastMessage!.text)
+                          : null,
+                    );
+                  });
+                } else {
+                  return preloader;
+                }
+              },
             );
-          });
+          } else if (state is RoomError) {
+            return Center(child: Text(state.message));
+          }
+          throw UnimplementedError();
         },
       ),
     );
