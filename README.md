@@ -7,7 +7,7 @@ create table if not exists public.users (
     id uuid references auth.users on delete cascade not null primary key,
     name varchar(18) not null unique,
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
-    constraint username_validation check (char_length(name) >= 3)
+    constraint username_validation check (name ~* '^[A-Za-z0-9_]{3,24}$')
 );
 comment on table public.users is 'Holds all of users profile information';
 
