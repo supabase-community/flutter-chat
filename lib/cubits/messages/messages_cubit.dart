@@ -13,7 +13,20 @@ class MessagesCubit extends Cubit<MessagesState> {
   StreamSubscription<List<Message>>? _messagesSubscription;
 
   void setMessagesListener(String roomId) {
-    _messagesSubscription =
-        supabase.from('messages:room_id=eq.$roomId').stream().execute();
+    _messagesSubscription = supabase
+        .from('messages:room_id=eq.$roomId')
+        .stream()
+        .order('created_at')
+        .execute()
+        .map((data) => data.map(Message.fromMap).toList())
+        .listen((messages) {
+      emit(MessagesLoaded(messages));
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _messagesSubscription?.cancel();
+    return super.close();
   }
 }
