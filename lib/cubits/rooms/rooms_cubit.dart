@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,38 +17,56 @@ class RoomCubit extends Cubit<RoomState> {
 
   /// List of rooms
   List<Room> _rooms = [];
-  final _roomsController = BehaviorSubject<List<Room>>();
-  Stream<List<Room>> get roomStream => _roomsController.stream;
+  StreamSubscription<List<Room>>? _roomsSubscription;
   bool _haveCalledGetRooms = false;
 
-  void getRooms() {
+  final Map<String, StreamSubscription<List<String>>>
+      _participantsSubscription = {};
+
+  void getRooms(BuildContext context) {
     if (_haveCalledGetRooms) {
       return;
     }
     _haveCalledGetRooms = true;
-    supabase
+    _roomsSubscription = supabase
         .from('rooms')
         .stream()
         .execute()
         .map((data) => data.map(Room.fromMap).toList())
         .listen((rooms) {
+      for (final room in rooms) {
+        _getParticipants(context: context, roomId: room.id);
+      }
       _rooms = rooms;
-      _roomsController.add(_rooms);
+      emit(RoomLoaded(_rooms));
     });
   }
 
-  Stream<List<Message>> getMessagesStream({
-    required String roomId,
+  void _getParticipants({
     required BuildContext context,
+    required String roomId,
   }) {
-    return supabase
-        .from('messages:room_id=eq.$roomId')
+    if (_participantsSubscription[roomId] != null) {
+      return;
+    }
+    _participantsSubscription[roomId] = supabase
+        .from('user_room:room_id=eq.$roomId')
         .stream()
         .execute()
-        .map((data) => data.map((row) {
-              final message = Message.fromMap(row);
-              BlocProvider.of<AppUserCubit>(context).getProfile(message.userId);
-              return message;
-            }).toList());
+        .map((data) => data.map((row) => row['user_id'] as String).toList())
+        .listen((participants) {
+      final index = _rooms.indexWhere((room) => room.id == roomId);
+      _rooms[index] = _rooms[index].copyWith(participants: participants);
+      emit(RoomLoaded(_rooms));
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _roomsSubscription?.cancel();
+    for (var listener in _participantsSubscription.values) {
+      listener.cancel();
+    }
+    return super.close();
   }
 }

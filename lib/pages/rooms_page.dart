@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
 import 'package:supabase_quickstart/cubits/rooms/rooms_cubit.dart';
+import 'package:supabase_quickstart/pages/chat_page.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
 /// Displays the past chat threads
@@ -31,6 +32,8 @@ class RoomsPage extends StatelessWidget {
                         .singleWhere((element) => element == self.id)];
 
                     return ListTile(
+                      onTap: () =>
+                          Navigator.of(context).push(ChatPage.route(room.id)),
                       leading: CircleAvatar(
                         child:
                             opponent == null ? preloader : Text(opponent.name),
