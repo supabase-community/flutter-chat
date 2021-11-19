@@ -17,9 +17,9 @@ class RoomsPage extends StatelessWidget {
       ),
       body: BlocBuilder<RoomCubit, RoomState>(
         builder: (context, state) {
-          if (state is RoomInitial) {
+          if (state is RoomsInitial) {
             return preloader;
-          } else if (state is RoomLoaded) {
+          } else if (state is RoomsLoaded) {
             final rooms = state.rooms;
             return BlocBuilder<AppUserCubit, AppUserState>(
               builder: (context, state) {
@@ -49,7 +49,7 @@ class RoomsPage extends StatelessWidget {
                 }
               },
             );
-          } else if (state is RoomError) {
+          } else if (state is RoomsError) {
             return Center(child: Text(state.message));
           }
           throw UnimplementedError();

@@ -13,7 +13,7 @@ import 'package:supabase_quickstart/utils/constants.dart';
 part 'rooms_state.dart';
 
 class RoomCubit extends Cubit<RoomState> {
-  RoomCubit() : super(RoomInitial());
+  RoomCubit() : super(RoomsInitial());
 
   /// List of rooms
   List<Room> _rooms = [];
@@ -22,6 +22,9 @@ class RoomCubit extends Cubit<RoomState> {
 
   final Map<String, StreamSubscription<List<String>>>
       _participantsSubscription = {};
+
+  final Map<String, StreamSubscription<Message?>> _recentMessageSubscriptions =
+      {};
 
   void getRooms(BuildContext context) {
     if (_haveCalledGetRooms) {
@@ -36,12 +39,14 @@ class RoomCubit extends Cubit<RoomState> {
         .listen((rooms) {
       for (final room in rooms) {
         _getParticipants(context: context, roomId: room.id);
+        _getNewestMessage(context: context, roomId: room.id);
       }
       _rooms = rooms;
-      emit(RoomLoaded(_rooms));
+      emit(RoomsLoaded(_rooms));
     });
   }
 
+  /// Loads the participants in each room and their profile
   void _getParticipants({
     required BuildContext context,
     required String roomId,
@@ -54,10 +59,31 @@ class RoomCubit extends Cubit<RoomState> {
         .stream()
         .execute()
         .map((data) => data.map((row) => row['user_id'] as String).toList())
-        .listen((participants) {
+        .listen((participantUserIds) {
       final index = _rooms.indexWhere((room) => room.id == roomId);
-      _rooms[index] = _rooms[index].copyWith(participants: participants);
-      emit(RoomLoaded(_rooms));
+      _rooms[index] = _rooms[index].copyWith(participants: participantUserIds);
+      for (final userId in participantUserIds) {
+        BlocProvider.of<AppUserCubit>(context).getProfile(userId);
+      }
+      emit(RoomsLoaded(_rooms));
+    });
+  }
+
+  void _getNewestMessage({
+    required BuildContext context,
+    required String roomId,
+  }) {
+    _recentMessageSubscriptions[roomId] = supabase
+        .from('messages')
+        .stream()
+        .order('created_at')
+        .limit(1)
+        .execute()
+        .map((data) => data.isEmpty ? null : Message.fromMap(data.first))
+        .listen((message) {
+      final index = _rooms.indexWhere((room) => room.id == roomId);
+      _rooms[index] = _rooms[index].copyWith(lastMessage: message);
+      emit(RoomsLoaded(_rooms));
     });
   }
 
