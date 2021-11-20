@@ -4,7 +4,6 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
 import 'package:supabase_quickstart/models/message.dart';
 import 'package:supabase_quickstart/models/room.dart';
@@ -14,6 +13,8 @@ part 'rooms_state.dart';
 
 class RoomCubit extends Cubit<RoomState> {
   RoomCubit() : super(RoomsInitial());
+
+  late final String _userId;
 
   /// List of rooms
   List<Room> _rooms = [];
@@ -31,6 +32,9 @@ class RoomCubit extends Cubit<RoomState> {
       return;
     }
     _haveCalledGetRooms = true;
+
+    _userId = supabase.auth.user()!.id;
+
     _roomsSubscription = supabase
         .from('rooms')
         .stream()
@@ -61,7 +65,9 @@ class RoomCubit extends Cubit<RoomState> {
         .map((data) => data.map((row) => row['user_id'] as String).toList())
         .listen((participantUserIds) {
       final index = _rooms.indexWhere((room) => room.id == roomId);
-      _rooms[index] = _rooms[index].copyWith(participants: participantUserIds);
+      final opponentUserId =
+          participantUserIds.singleWhere((element) => element != _userId);
+      _rooms[index] = _rooms[index].copyWith(opponentUserId: opponentUserId);
       for (final userId in participantUserIds) {
         BlocProvider.of<AppUserCubit>(context).getProfile(userId);
       }
@@ -83,6 +89,15 @@ class RoomCubit extends Cubit<RoomState> {
         .listen((message) {
       final index = _rooms.indexWhere((room) => room.id == roomId);
       _rooms[index] = _rooms[index].copyWith(lastMessage: message);
+      _rooms.sort((a, b) {
+        /// Sort according to the last message
+        /// Use the room createdAt when last message is not available
+        final aTimeStamp =
+            a.lastMessage != null ? a.lastMessage!.createdAt : a.createdAt;
+        final bTimeStamp =
+            b.lastMessage != null ? b.lastMessage!.createdAt : b.createdAt;
+        return aTimeStamp.compareTo(bTimeStamp);
+      });
       emit(RoomsLoaded(_rooms));
     });
   }
@@ -90,7 +105,10 @@ class RoomCubit extends Cubit<RoomState> {
   @override
   Future<void> close() {
     _roomsSubscription?.cancel();
-    for (var listener in _participantsSubscription.values) {
+    for (final listener in _participantsSubscription.values) {
+      listener.cancel();
+    }
+    for (final listener in _recentMessageSubscriptions.values) {
       listener.cancel();
     }
     return super.close();

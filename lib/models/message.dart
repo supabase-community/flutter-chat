@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:supabase_quickstart/models/app_user.dart';
-
 class Message {
   Message({
     required this.id,
@@ -19,11 +17,9 @@ class Message {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'user_id': userId,
       'roomId': roomId,
       'text': text,
-      'createdAt': createdAt.millisecondsSinceEpoch,
     };
   }
 

@@ -1,19 +1,18 @@
 import 'dart:convert';
 
-import 'package:supabase_quickstart/models/app_user.dart';
 import 'package:supabase_quickstart/models/message.dart';
 
 class Room {
   Room({
     required this.id,
     required this.createdAt,
-    required this.participants,
+    this.opponentUserId,
     this.lastMessage,
   });
 
   final String id;
   final DateTime createdAt;
-  final List<String> participants;
+  final String? opponentUserId;
   final Message? lastMessage;
 
   Map<String, dynamic> toMap() {
@@ -27,7 +26,6 @@ class Room {
     return Room(
       id: map['id'],
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
-      participants: [],
     );
   }
 
@@ -38,13 +36,13 @@ class Room {
   Room copyWith({
     String? id,
     DateTime? createdAt,
-    List<String>? participants,
+    String? opponentUserId,
     Message? lastMessage,
   }) {
     return Room(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
-      participants: participants ?? this.participants,
+      opponentUserId: opponentUserId ?? this.opponentUserId,
       lastMessage: lastMessage ?? this.lastMessage,
     );
   }

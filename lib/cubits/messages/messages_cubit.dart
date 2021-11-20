@@ -11,8 +11,16 @@ class MessagesCubit extends Cubit<MessagesState> {
   MessagesCubit() : super(MessagesInitial());
 
   StreamSubscription<List<Message>>? _messagesSubscription;
+  List<Message> _messages = [];
+
+  late final String _roomId;
+  late final String _userId;
 
   void setMessagesListener(String roomId) {
+    _roomId = roomId;
+
+    _userId = supabase.auth.user()!.id;
+
     _messagesSubscription = supabase
         .from('messages:room_id=eq.$roomId')
         .stream()
@@ -20,8 +28,30 @@ class MessagesCubit extends Cubit<MessagesState> {
         .execute()
         .map((data) => data.map(Message.fromMap).toList())
         .listen((messages) {
-      emit(MessagesLoaded(messages));
+      _messages = messages;
+      emit(MessagesLoaded(_messages));
     });
+  }
+
+  Future<void> submitMessage(String text) async {
+    /// Add message to present to the user right away
+    final message = Message(
+      id: '',
+      roomId: _roomId,
+      userId: _userId,
+      text: text,
+      createdAt: DateTime.now(),
+    );
+    _messages.add(message);
+    emit(MessagesLoaded(_messages));
+    final result =
+        await supabase.from('messages').insert(message.toMap()).execute();
+    final error = result.error;
+    if (error != null) {
+      emit(MessagesError('Error submitting message.'));
+      _messages.removeLast();
+      emit(MessagesLoaded(_messages));
+    }
   }
 
   @override

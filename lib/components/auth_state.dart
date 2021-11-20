@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase/supabase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
-import 'package:supabase_quickstart/models/app_user.dart';
 import 'package:supabase_quickstart/pages/account_page.dart';
 import 'package:supabase_quickstart/pages/login_page.dart';
 import 'package:supabase_quickstart/utils/constants.dart';

@@ -24,12 +24,10 @@ class RoomsPage extends StatelessWidget {
             return BlocBuilder<AppUserCubit, AppUserState>(
               builder: (context, state) {
                 if (state is AppUserLoaded) {
-                  final self = state.self;
                   final appUsers = state.appUsers;
                   return ListView.builder(itemBuilder: (context, index) {
                     final room = rooms[index];
-                    final opponent = appUsers[room.participants
-                        .singleWhere((element) => element == self.id)];
+                    final opponent = appUsers[room.opponentUserId];
 
                     return ListTile(
                       onTap: () =>
