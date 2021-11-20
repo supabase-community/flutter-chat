@@ -26,7 +26,12 @@ class MessagesCubit extends Cubit<MessagesState> {
         .stream()
         .order('created_at')
         .execute()
-        .map((data) => data.map(Message.fromMap).toList())
+        .map((data) => data.map((row) {
+              return Message.fromMap(
+                map: row,
+                myUserId: _userId,
+              );
+            }).toList())
         .listen((messages) {
       _messages = messages;
       emit(MessagesLoaded(_messages));
@@ -41,6 +46,7 @@ class MessagesCubit extends Cubit<MessagesState> {
       userId: _userId,
       text: text,
       createdAt: DateTime.now(),
+      isMine: true,
     );
     _messages.add(message);
     emit(MessagesLoaded(_messages));

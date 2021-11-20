@@ -85,7 +85,12 @@ class RoomCubit extends Cubit<RoomState> {
         .order('created_at')
         .limit(1)
         .execute()
-        .map((data) => data.isEmpty ? null : Message.fromMap(data.first))
+        .map((data) => data.isEmpty
+            ? null
+            : Message.fromMap(
+                map: data.first,
+                myUserId: _userId,
+              ))
         .listen((message) {
       final index = _rooms.indexWhere((room) => room.id == roomId);
       _rooms[index] = _rooms[index].copyWith(lastMessage: message);
