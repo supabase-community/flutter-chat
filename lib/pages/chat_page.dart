@@ -36,12 +36,17 @@ class ChatPage extends StatelessWidget {
             return preloader;
           } else if (state is MessagesLoaded) {
             final messages = state.messages;
-            return ListView.builder(
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                return _ChatBubble(message: message);
-              },
+            return Column(
+              children: [
+                ListView.builder(
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[index];
+                    return _ChatBubble(message: message);
+                  },
+                ),
+                const _MessageBar(),
+              ],
             );
           } else if (state is MessagesError) {
             return Center(child: Text(state.message));
@@ -50,6 +55,66 @@ class ChatPage extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+/// Set of widget that contains TextField and Button to submit message
+class _MessageBar extends StatefulWidget {
+  const _MessageBar({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<_MessageBar> createState() => _MessageBarState();
+}
+
+class _MessageBarState extends State<_MessageBar> {
+  late final TextEditingController _textController;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextFormField(
+              controller: _textController,
+              decoration: const InputDecoration(
+                hintText: 'Type a message',
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.all(8),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () =>
+                _textController.text.isEmpty ? null : _submitMessage(),
+            child: const Text('Send'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    _textController = TextEditingController()
+      ..addListener(() {
+        setState(() {});
+      });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  void _submitMessage() async {
+    final text = _textController.text;
+    BlocProvider.of<MessagesCubit>(context).submitMessage(text);
   }
 }
 
