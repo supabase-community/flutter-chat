@@ -10,14 +10,21 @@ part 'app_user_state.dart';
 class AppUserCubit extends Cubit<AppUserState> {
   AppUserCubit() : super(AppUserInitial());
 
-  /// Map of app users cache in memory with user_id as the key
+  String? _selfUserId;
+
+  /// AppUser object of the logged in user
   AppUser? _self;
+
+  /// Map of app users cache in memory with user_id as the key
   final Map<String, AppUser> _appUsers = {};
   final Map<String, StreamSubscription<AppUser>> _appUserSubscriptions = {};
 
   void getProfile(String userId, {bool isSelf = false}) {
     if (_appUserSubscriptions[userId] != null) {
       return;
+    }
+    if (isSelf) {
+      _selfUserId = userId;
     }
     _appUserSubscriptions[userId] = supabase
         .from('users:id=eq.$userId')
@@ -28,9 +35,11 @@ class AppUserCubit extends Cubit<AppUserState> {
       _appUsers[userId] = appUser;
       if (isSelf) {
         _self = appUser;
-      }
-      if (_self != null) {
-        emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
+        if (_self != null) {
+          emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
+        } else {
+          emit(AppUserNoProfile());
+        }
       }
     });
   }
@@ -38,8 +47,9 @@ class AppUserCubit extends Cubit<AppUserState> {
   Future<void> updateProfile({
     required String name,
   }) async {
-    _appUsers[_self!.id] = _appUsers[_self!.id]!.copyWith(name: name);
-    final updates = {'id': _self!.id, 'username': name};
+    _appUsers[_selfUserId!] = _appUsers[_selfUserId]!.copyWith(name: name);
+    final updates = {'id': _selfUserId, 'username': name};
     await supabase.from('profiles').upsert(updates).execute();
+    emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
   }
 }

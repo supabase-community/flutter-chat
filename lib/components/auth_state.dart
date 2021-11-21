@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
 import 'package:supabase_quickstart/pages/account_page.dart';
 import 'package:supabase_quickstart/pages/login_page.dart';
+import 'package:supabase_quickstart/pages/splash_page.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
 class AuthState<T extends StatefulWidget> extends SupabaseAuthState<T> {
@@ -20,10 +21,11 @@ class AuthState<T extends StatefulWidget> extends SupabaseAuthState<T> {
   void onAuthenticated(Session session) {
     if (mounted) {
       if (session.user != null) {
-        BlocProvider.of<AppUserCubit>(context).getProfile(session.user!.id);
+        BlocProvider.of<AppUserCubit>(context)
+            .getProfile(session.user!.id, isSelf: true);
       }
       Navigator.of(context)
-          .pushAndRemoveUntil(AccountPage.route(), (route) => false);
+          .pushAndRemoveUntil(SplashPage.route(), (route) => false);
     }
   }
 

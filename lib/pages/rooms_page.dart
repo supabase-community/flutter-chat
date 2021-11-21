@@ -9,6 +9,15 @@ import 'package:supabase_quickstart/utils/constants.dart';
 class RoomsPage extends StatelessWidget {
   const RoomsPage({Key? key}) : super(key: key);
 
+  static Route<void> route() {
+    return MaterialPageRoute(
+      builder: (context) => BlocProvider<RoomCubit>(
+        create: (context) => RoomCubit(),
+        child: const RoomsPage(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -22,11 +22,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<AppUserCubit>(create: (context) => AppUserCubit()),
-        BlocProvider<RoomCubit>(create: (context) => RoomCubit()),
-      ],
+    return BlocProvider<AppUserCubit>(
+      create: (context) => AppUserCubit(),
       child: MaterialApp(
         title: 'SupaChat',
         theme: ThemeData.dark().copyWith(
