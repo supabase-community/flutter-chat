@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class Message {
   Message({
     required this.id,
