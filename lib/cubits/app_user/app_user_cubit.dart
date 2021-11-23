@@ -47,9 +47,17 @@ class AppUserCubit extends Cubit<AppUserState> {
   Future<void> updateProfile({
     required String name,
   }) async {
-    _appUsers[_selfUserId!] = _appUsers[_selfUserId]!.copyWith(name: name);
-    final updates = {'id': _selfUserId, 'username': name};
-    await supabase.from('profiles').upsert(updates).execute();
-    emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
+    try {
+      emit(AppUserUpdating());
+      _appUsers[_selfUserId!] = _appUsers[_selfUserId]!.copyWith(name: name);
+      final updates = {'id': _selfUserId, 'username': name};
+      await supabase.from('users').upsert(updates).execute();
+    } catch (e) {
+      if (_self == null) {
+        emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
+      } else {
+        emit(AppUserNoProfile());
+      }
+    }
   }
 }

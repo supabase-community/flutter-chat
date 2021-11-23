@@ -17,3 +17,6 @@ class AppUserLoaded extends AppUserState {
 
 /// State where the logged in user has not been registered yet.
 class AppUserNoProfile extends AppUserState {}
+
+/// State where the user is updating the profile
+class AppUserUpdating extends AppUserState {}

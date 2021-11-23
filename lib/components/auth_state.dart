@@ -23,8 +23,10 @@ class AuthState<T extends StatefulWidget> extends SupabaseAuthState<T> {
         BlocProvider.of<AppUserCubit>(context)
             .getProfile(session.user!.id, isSelf: true);
       }
-      Navigator.of(context)
-          .pushAndRemoveUntil(SplashPage.route(), (route) => false);
+      if (this is! SplashPageState) {
+        Navigator.of(context)
+            .pushAndRemoveUntil(SplashPage.route(), (route) => false);
+      }
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
 import 'package:supabase_quickstart/cubits/rooms/rooms_cubit.dart';
+import 'package:supabase_quickstart/pages/account_page.dart';
 import 'package:supabase_quickstart/pages/chat_page.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
@@ -23,6 +24,12 @@ class RoomsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chats'),
+        actions: [
+          IconButton(
+            onPressed: () => Navigator.of(context).push(AccountPage.route()),
+            icon: const Icon(Icons.person_outline_outlined),
+          ),
+        ],
       ),
       body: BlocBuilder<RoomCubit, RoomState>(
         builder: (context, state) {

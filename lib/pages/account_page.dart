@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_quickstart/pages/splash_page.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
 class AccountPage extends StatefulWidget {
-  const AccountPage({Key? key}) : super(key: key);
+  const AccountPage({Key? key, required this.isRegistering}) : super(key: key);
 
-  static Route<void> route() {
+  static Route<void> route([bool isRegistering = false]) {
     return MaterialPageRoute(builder: (context) {
-      return const AccountPage();
+      return AccountPage(isRegistering: isRegistering);
     });
   }
+
+  final bool isRegistering;
 
   @override
   _AccountPageState createState() => _AccountPageState();
@@ -20,10 +23,19 @@ class _AccountPageState extends State<AccountPage> {
   final _usernameController = TextEditingController();
 
   /// Called when user taps `Update` button
-  void _updateProfile() {
-    final userName = _usernameController.text;
-    BlocProvider.of<AppUserCubit>(context).updateProfile(name: userName);
-    Navigator.of(context).pop();
+  Future<void> _updateProfile() async {
+    try {
+      final userName = _usernameController.text;
+      BlocProvider.of<AppUserCubit>(context).updateProfile(name: userName);
+      if (widget.isRegistering) {
+        Navigator.of(context)
+            .pushAndRemoveUntil(SplashPage.route(), (route) => false);
+      } else {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      context.showErrorSnackBar(message: 'Failed to update profile');
+    }
   }
 
   Future<void> _signOut() async {
@@ -43,7 +55,9 @@ class _AccountPageState extends State<AccountPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(
+        title: const Text('Profile'),
+      ),
       body: BlocConsumer<AppUserCubit, AppUserState>(
         listener: (context, state) {
           if (state is AppUserLoaded) {
@@ -61,9 +75,14 @@ class _AccountPageState extends State<AccountPage> {
                 ),
                 const SizedBox(height: 18),
                 ElevatedButton(
-                    onPressed: _updateProfile, child: const Text('Save')),
+                  onPressed: _updateProfile,
+                  child: const Text('Save'),
+                ),
                 const SizedBox(height: 18),
-                TextButton(onPressed: _signOut, child: const Text('Sign Out')),
+                TextButton(
+                  onPressed: _signOut,
+                  child: const Text('Sign Out'),
+                ),
               ],
             );
           }
