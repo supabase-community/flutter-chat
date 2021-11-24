@@ -1,5 +1,9 @@
 # SupaChat
 
+Simple chat app to demonstrate the realtime capability of Supabase with Flutter.
+
+With [WALRUS](https://github.com/supabase/walrus), Supabase now can have row level security enabled with its realtime feature. This repo utilizes row level security on realtime to securely exchange private messages with other users using the app.
+
 ## SQL
 
 ```sql
