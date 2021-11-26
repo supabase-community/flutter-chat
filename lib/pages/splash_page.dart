@@ -27,7 +27,7 @@ class SplashPageState extends AuthState<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener(
+    return BlocListener<AppUserCubit, AppUserState>(
       /// Redirect the user to the appropreate page depending on the AppUserState
       listener: (context, state) {
         if (state is AppUserLoaded) {
