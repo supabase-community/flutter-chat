@@ -85,4 +85,22 @@ create policy "Users can insert messages on rooms they are in." on public.messag
         and user_room.user_id = auth.uid()
     )
 );
+
+create or replace function create_new_room(opponent_uid uuid) returns void as $$
+    declare
+        room_id uuid;
+    begin
+        -- Create a new room
+        insert into public.rooms default values
+        returning id into room_id;
+
+        -- Insert the caller user into the new room
+        insert into public.user_room (user_id, room_id)
+        values (auth.uid(), room_id);
+
+        -- Insert the opponent user into the new room
+        insert into public.user_room (user_id, room_id)
+        values (opponent_uid, room_id);
+    end
+$$ language plpgsql;
 ```
