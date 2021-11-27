@@ -65,7 +65,11 @@ class RoomCubit extends Cubit<RoomState> {
         _getNewestMessage(context: context, roomId: room.id);
       }
       _rooms = rooms;
-      emit(RoomsLoaded(newUsers: _newUsers, rooms: _rooms));
+      if (_rooms.isEmpty) {
+        emit(RoomsEmpty(newUsers: _newUsers));
+      } else {
+        emit(RoomsLoaded(newUsers: _newUsers, rooms: _rooms));
+      }
     });
   }
 

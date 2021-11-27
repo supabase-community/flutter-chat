@@ -39,7 +39,7 @@ comment on table public.user_room is 'Relational table of users and rooms.';
 
 
 alter table public.rooms enable row level security;
-create policy "rooms are viewable by everyone. " on public.rooms for select using (
+create policy "Users can view rooms that they are in." on public.rooms for select using (
     exists(
         select 1
         from user_room
@@ -48,14 +48,19 @@ create policy "rooms are viewable by everyone. " on public.rooms for select usin
     )
 );
 
+-- Returns a set of rooms that a user has joined.
+-- Used within security policy of user_room
+create or replace function user_room_set()
+returns setof uuid as $$
+  select room_id
+    from user_room
+    where user_id = auth.uid()
+$$ stable language sql security definer;
+
+
 alter table public.user_room enable row level security;
-create policy "Only the participants can view who is in the room" on public.user_room for select using (
-    exists(
-        select 1
-        from rooms
-        where rooms.id = user_room.room_id
-        and user_room.user_id = auth.uid()
-    )
+create policy "Only the participants can view who is in the room." on public.user_room for select using (
+    room_id in (select user_room_set())
 );
 
 
@@ -91,6 +96,7 @@ create policy "Users can insert messages on rooms they are in." on public.messag
 -- add tables to the publication
 alter publication supabase_realtime add table public.users;
 alter publication supabase_realtime add table public.rooms;
+alter publication supabase_realtime add table public.user_room;
 alter publication supabase_realtime add table public.messages;
 
 -- Returns list of rooms as well as the participants as array of uuid

@@ -15,6 +15,12 @@ class RoomsLoaded extends RoomState {
   });
 }
 
+class RoomsEmpty extends RoomState {
+  final List<AppUser> newUsers;
+
+  RoomsEmpty({required this.newUsers});
+}
+
 class RoomsError extends RoomState {
   final String message;
 

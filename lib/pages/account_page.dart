@@ -45,6 +45,8 @@ class _AccountPageState extends State<AccountPage> {
     if (error != null) {
       context.showErrorSnackBar(message: error.message);
     }
+    Navigator.of(context)
+        .pushAndRemoveUntil(SplashPage.route(), (route) => false);
   }
 
   @override

@@ -25,7 +25,7 @@ class Room {
   static Room fromMap(Map<String, dynamic> map) {
     return Room(
       id: map['id'],
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
+      createdAt: DateTime.parse(map['created_at']),
     );
   }
 
