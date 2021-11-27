@@ -16,8 +16,8 @@ class AppUserCubit extends Cubit<AppUserState> {
   AppUser? _self;
 
   /// Map of app users cache in memory with user_id as the key
-  final Map<String, AppUser> _appUsers = {};
-  final Map<String, StreamSubscription<AppUser>> _appUserSubscriptions = {};
+  final Map<String, AppUser?> _appUsers = {};
+  final Map<String, StreamSubscription<AppUser?>> _appUserSubscriptions = {};
 
   void getProfile(String userId, {bool isSelf = false}) {
     if (_appUserSubscriptions[userId] != null) {
@@ -26,22 +26,26 @@ class AppUserCubit extends Cubit<AppUserState> {
     if (isSelf) {
       _selfUserId = userId;
     }
-    _appUserSubscriptions[userId] = supabase
-        .from('users:id=eq.$userId')
-        .stream()
-        .execute()
-        .map((data) => AppUser.fromMap(data.first))
-        .listen((appUser) {
-      _appUsers[userId] = appUser;
-      if (isSelf) {
-        _self = appUser;
-        if (_self != null) {
-          emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
-        } else {
-          emit(AppUserNoProfile());
+    try {
+      _appUserSubscriptions[userId] = supabase
+          .from('users:id=eq.$userId')
+          .stream()
+          .execute()
+          .map((data) => data.isEmpty ? null : AppUser.fromMap(data.first))
+          .listen((appUser) {
+        _appUsers[userId] = appUser;
+        if (isSelf) {
+          _self = appUser;
+          if (_self != null) {
+            emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
+          } else {
+            emit(AppUserNoProfile());
+          }
         }
-      }
-    });
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> updateProfile({
@@ -49,15 +53,19 @@ class AppUserCubit extends Cubit<AppUserState> {
   }) async {
     try {
       emit(AppUserUpdating());
-      _appUsers[_selfUserId!] = _appUsers[_selfUserId]!.copyWith(name: name);
-      final updates = {'id': _selfUserId, 'username': name};
-      await supabase.from('users').upsert(updates).execute();
+      final updates = {'id': _selfUserId, 'name': name};
+      final res = await supabase.from('users').upsert(updates).execute();
+      final error = res.error;
+      if (error != null) {
+        throw error;
+      }
     } catch (e) {
       if (_self == null) {
-        emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
-      } else {
         emit(AppUserNoProfile());
+      } else {
+        emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
       }
+      rethrow;
     }
   }
 }

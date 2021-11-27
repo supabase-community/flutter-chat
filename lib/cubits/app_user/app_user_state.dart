@@ -11,7 +11,7 @@ class AppUserLoaded extends AppUserState {
     required this.self,
   });
 
-  final Map<String, AppUser> appUsers;
+  final Map<String, AppUser?> appUsers;
   final AppUser self;
 }
 

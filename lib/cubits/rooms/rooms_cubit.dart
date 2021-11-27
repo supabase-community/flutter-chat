@@ -138,7 +138,6 @@ class RoomCubit extends Cubit<RoomState> {
     final res = await supabase.rpc('create_new_room',
         params: {'opponent_uid': opponentUserId}).execute();
     final error = res.error;
-    late final String roomId;
     if (error != null) {
       emit(RoomsError('Error creating a new room'));
     }

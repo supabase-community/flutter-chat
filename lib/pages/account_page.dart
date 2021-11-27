@@ -7,7 +7,7 @@ import 'package:supabase_quickstart/utils/constants.dart';
 class AccountPage extends StatefulWidget {
   const AccountPage({Key? key, required this.isRegistering}) : super(key: key);
 
-  static Route<void> route([bool isRegistering = false]) {
+  static Route<void> route({bool isRegistering = false}) {
     return MaterialPageRoute(builder: (context) {
       return AccountPage(isRegistering: isRegistering);
     });
@@ -26,7 +26,8 @@ class _AccountPageState extends State<AccountPage> {
   Future<void> _updateProfile() async {
     try {
       final userName = _usernameController.text;
-      BlocProvider.of<AppUserCubit>(context).updateProfile(name: userName);
+      await BlocProvider.of<AppUserCubit>(context)
+          .updateProfile(name: userName);
       if (widget.isRegistering) {
         Navigator.of(context)
             .pushAndRemoveUntil(SplashPage.route(), (route) => false);
@@ -65,7 +66,11 @@ class _AccountPageState extends State<AccountPage> {
           }
         },
         builder: (context, state) {
-          if (state is AppUserLoaded) {
+          if (state is AppUserInitial) {
+            return preloader;
+          } else if (state is AppUserUpdating) {
+            return preloader;
+          } else {
             return ListView(
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
               children: [
@@ -86,7 +91,6 @@ class _AccountPageState extends State<AccountPage> {
               ],
             );
           }
-          return preloader;
         },
       ),
     );

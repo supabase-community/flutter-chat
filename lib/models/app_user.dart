@@ -23,7 +23,7 @@ class AppUser {
     return AppUser(
       id: map['id'],
       name: map['name'],
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt']),
+      createdAt: DateTime.parse(map['created_at']),
     );
   }
 

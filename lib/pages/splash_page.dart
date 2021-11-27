@@ -36,8 +36,8 @@ class SplashPageState extends AuthState<SplashPage> {
               .pushAndRemoveUntil(RoomsPage.route(), (_) => false);
         } else if (state is AppUserNoProfile) {
           /// If no profile is found, take them to AccountPage to first create profile
-          Navigator.of(context)
-              .pushAndRemoveUntil(AccountPage.route(), (_) => false);
+          Navigator.of(context).pushAndRemoveUntil(
+              AccountPage.route(isRegistering: true), (_) => false);
         }
       },
       child: const Scaffold(

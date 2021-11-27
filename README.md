@@ -88,6 +88,11 @@ create policy "Users can insert messages on rooms they are in." on public.messag
     )
 );
 
+-- add tables to the publication
+alter publication supabase_realtime add table public.users;
+alter publication supabase_realtime add table public.rooms;
+alter publication supabase_realtime add table public.messages;
+
 -- Returns list of rooms as well as the participants as array of uuid
 create or replace view room_participants
 as
