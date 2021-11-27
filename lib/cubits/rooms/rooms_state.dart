@@ -3,12 +3,16 @@ part of 'rooms_cubit.dart';
 @immutable
 abstract class RoomState {}
 
-class RoomsInitial extends RoomState {}
+class RoomsLoading extends RoomState {}
 
 class RoomsLoaded extends RoomState {
+  final List<AppUser> newUsers;
   final List<Room> rooms;
 
-  RoomsLoaded(this.rooms);
+  RoomsLoaded({
+    required this.rooms,
+    required this.newUsers,
+  });
 }
 
 class RoomsError extends RoomState {

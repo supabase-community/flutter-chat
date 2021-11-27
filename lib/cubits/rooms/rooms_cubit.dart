@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_quickstart/models/app_user.dart';
 import 'package:supabase_quickstart/models/message.dart';
 import 'package:supabase_quickstart/models/room.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
@@ -12,9 +13,12 @@ import 'package:supabase_quickstart/utils/constants.dart';
 part 'rooms_state.dart';
 
 class RoomCubit extends Cubit<RoomState> {
-  RoomCubit() : super(RoomsInitial());
+  RoomCubit() : super(RoomsLoading());
 
   late final String _userId;
+
+  /// List of new users of the app for the user to start talking to
+  late final List<AppUser> _newUsers;
 
   /// List of rooms
   List<Room> _rooms = [];
@@ -27,7 +31,7 @@ class RoomCubit extends Cubit<RoomState> {
   final Map<String, StreamSubscription<Message?>> _recentMessageSubscriptions =
       {};
 
-  void getRooms(BuildContext context) {
+  Future<void> getRooms(BuildContext context) async {
     if (_haveCalledGetRooms) {
       return;
     }
@@ -35,6 +39,21 @@ class RoomCubit extends Cubit<RoomState> {
 
     _userId = supabase.auth.user()!.id;
 
+    final res = await supabase
+        .from('users')
+        .select()
+        .not('id', 'eq', _userId)
+        .order('created_at')
+        .limit(12)
+        .execute();
+    final error = res.error;
+    if (error != null) {
+      emit(RoomsError('Error loading new users'));
+    }
+    final data = List<Map<String, dynamic>>.from(res.data as List);
+    _newUsers = data.map(AppUser.fromMap).toList();
+
+    /// Get realtime updates on rooms that the user is in
     _roomsSubscription = supabase
         .from('rooms')
         .stream()
@@ -46,7 +65,7 @@ class RoomCubit extends Cubit<RoomState> {
         _getNewestMessage(context: context, roomId: room.id);
       }
       _rooms = rooms;
-      emit(RoomsLoaded(_rooms));
+      emit(RoomsLoaded(newUsers: _newUsers, rooms: _rooms));
     });
   }
 
@@ -71,7 +90,10 @@ class RoomCubit extends Cubit<RoomState> {
       for (final userId in participantUserIds) {
         BlocProvider.of<AppUserCubit>(context).getProfile(userId);
       }
-      emit(RoomsLoaded(_rooms));
+      emit(RoomsLoaded(
+        newUsers: _newUsers,
+        rooms: _rooms,
+      ));
     });
   }
 
@@ -103,8 +125,25 @@ class RoomCubit extends Cubit<RoomState> {
             b.lastMessage != null ? b.lastMessage!.createdAt : b.createdAt;
         return aTimeStamp.compareTo(bTimeStamp);
       });
-      emit(RoomsLoaded(_rooms));
+      emit(RoomsLoaded(
+        newUsers: _newUsers,
+        rooms: _rooms,
+      ));
     });
+  }
+
+  /// Creates or returns an existing roomID of both participants
+  Future<String> createRoom(String opponentUserId) async {
+    emit(RoomsLoading());
+    final res = await supabase.rpc('create_new_room',
+        params: {'opponent_uid': opponentUserId}).execute();
+    final error = res.error;
+    late final String roomId;
+    if (error != null) {
+      emit(RoomsError('Error creating a new room'));
+    }
+    emit(RoomsLoaded(rooms: _rooms, newUsers: _newUsers));
+    return res.data as String;
   }
 
   @override

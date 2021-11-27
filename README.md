@@ -11,6 +11,8 @@ create table if not exists public.users (
     id uuid references auth.users on delete cascade not null primary key,
     name varchar(18) not null unique,
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
+
+    -- username should be 3 to 24 characters long containing alphabets, numbers and underscores
     constraint username_validation check (name ~* '^[A-Za-z0-9_]{3,24}$')
 );
 comment on table public.users is 'Holds all of users profile information';
@@ -86,21 +88,41 @@ create policy "Users can insert messages on rooms they are in." on public.messag
     )
 );
 
-create or replace function create_new_room(opponent_uid uuid) returns void as $$
+-- Returns list of rooms as well as the participants as array of uuid
+create or replace view room_participants
+as
+    select room.id as room_id, array_agg(user_room.user_id) as users
+    from rooms
+    left join user_room on rooms.id = user_room.room_id
+    group by rooms.id;
+
+
+create or replace function create_new_room(opponent_uid uuid) returns uuid as $$
     declare
         room_id uuid;
     begin
-        -- Create a new room
-        insert into public.rooms default values
-        returning id into room_id;
+        -- Check if room with both participants already exist
+        select room_id from room_participants
+        into room_id
+        where opponent_uid=any(users)
+        and auth.uid()=any(users);
 
-        -- Insert the caller user into the new room
-        insert into public.user_room (user_id, room_id)
-        values (auth.uid(), room_id);
 
-        -- Insert the opponent user into the new room
-        insert into public.user_room (user_id, room_id)
-        values (opponent_uid, room_id);
+        if not found then
+            -- Create a new room
+            insert into public.rooms default values
+            returning id into room_id;
+
+            -- Insert the caller user into the new room
+            insert into public.user_room (user_id, room_id)
+            values (auth.uid(), room_id);
+
+            -- Insert the opponent user into the new room
+            insert into public.user_room (user_id, room_id)
+            values (opponent_uid, room_id);
+        end if;
+
+        return room_id;
     end
 $$ language plpgsql;
 ```

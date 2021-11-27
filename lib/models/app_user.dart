@@ -19,7 +19,7 @@ class AppUser {
     };
   }
 
-  factory AppUser.fromMap(Map<String, dynamic> map) {
+  static AppUser fromMap(Map<String, dynamic> map) {
     return AppUser(
       id: map['id'],
       name: map['name'],

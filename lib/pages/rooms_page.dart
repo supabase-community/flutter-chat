@@ -33,31 +33,66 @@ class RoomsPage extends StatelessWidget {
       ),
       body: BlocBuilder<RoomCubit, RoomState>(
         builder: (context, state) {
-          if (state is RoomsInitial) {
+          if (state is RoomsLoading) {
             return preloader;
           } else if (state is RoomsLoaded) {
+            final newUsers = state.newUsers;
             final rooms = state.rooms;
             return BlocBuilder<AppUserCubit, AppUserState>(
               builder: (context, state) {
                 if (state is AppUserLoaded) {
                   final appUsers = state.appUsers;
-                  return ListView.builder(itemBuilder: (context, index) {
-                    final room = rooms[index];
-                    final opponent = appUsers[room.opponentUserId];
-
-                    return ListTile(
-                      onTap: () =>
-                          Navigator.of(context).push(ChatPage.route(room.id)),
-                      leading: CircleAvatar(
-                        child:
-                            opponent == null ? preloader : Text(opponent.name),
+                  return Column(
+                    children: [
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: newUsers
+                              .map<Widget>((user) => InkWell(
+                                    onTap: () async {
+                                      final roomId =
+                                          await BlocProvider.of<RoomCubit>(
+                                                  context)
+                                              .createRoom(user.id);
+                                      Navigator.of(context)
+                                          .push(ChatPage.route(roomId));
+                                    },
+                                    child: Column(
+                                      children: [
+                                        CircleAvatar(
+                                          child: Text(user.name),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(user.name),
+                                      ],
+                                    ),
+                                  ))
+                              .toList(),
+                        ),
                       ),
-                      title: opponent == null ? null : Text(opponent.name),
-                      subtitle: room.lastMessage != null
-                          ? Text(room.lastMessage!.text)
-                          : null,
-                    );
-                  });
+                      Expanded(
+                        child: ListView.builder(itemBuilder: (context, index) {
+                          final room = rooms[index];
+                          final opponent = appUsers[room.opponentUserId];
+
+                          return ListTile(
+                            onTap: () => Navigator.of(context)
+                                .push(ChatPage.route(room.id)),
+                            leading: CircleAvatar(
+                              child: opponent == null
+                                  ? preloader
+                                  : Text(opponent.name),
+                            ),
+                            title:
+                                opponent == null ? null : Text(opponent.name),
+                            subtitle: room.lastMessage != null
+                                ? Text(room.lastMessage!.text)
+                                : null,
+                          );
+                        }),
+                      ),
+                    ],
+                  );
                 } else {
                   return preloader;
                 }
