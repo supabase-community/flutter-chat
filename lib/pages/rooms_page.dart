@@ -64,7 +64,11 @@ class RoomsPage extends StatelessWidget {
                               title:
                                   opponent == null ? null : Text(opponent.name),
                               subtitle: room.lastMessage != null
-                                  ? Text(room.lastMessage!.text)
+                                  ? Text(
+                                      room.lastMessage!.text,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    )
                                   : null,
                             );
                           },

@@ -40,6 +40,7 @@ class ChatPage extends StatelessWidget {
               children: [
                 Expanded(
                   child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
                       final message = messages[index];
@@ -75,33 +76,37 @@ class _MessageBarState extends State<_MessageBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextFormField(
-              maxLines: null,
-              autofocus: true,
-              controller: _textController,
-              decoration: const InputDecoration(
-                hintText: 'Type a message',
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.all(8),
+    return Material(
+      color: Colors.black,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                maxLines: null,
+                autofocus: true,
+                controller: _textController,
+                decoration: const InputDecoration(
+                  hintText: 'Type a message',
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(8),
+                ),
               ),
             ),
-          ),
-          TextButton(
-            onPressed: () => _submitMessage(),
-            child: const Text('Send'),
-          ),
-        ],
+            TextButton(
+              onPressed: () => _submitMessage(),
+              child: const Text('Send'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   @override
   void initState() {
+    _textController = TextEditingController();
     super.initState();
   }
 
@@ -151,7 +156,7 @@ class _ChatBubble extends StatelessWidget {
       ),
       const SizedBox(width: 12),
       Text(format(message.createdAt, locale: 'en_short')),
-      const SizedBox(width: 50),
+      const SizedBox(width: 60),
     ];
     if (message.isMine) {
       chatContents = chatContents.reversed.toList();

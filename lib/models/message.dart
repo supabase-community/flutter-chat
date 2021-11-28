@@ -34,7 +34,7 @@ class Message {
       roomId: map['room_id'],
       userId: map['user_id'],
       text: map['text'],
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at']),
+      createdAt: DateTime.parse(map['created_at']),
       isMine: myUserId == map['user_id'],
     );
   }
