@@ -48,7 +48,7 @@ class MessagesCubit extends Cubit<MessagesState> {
       createdAt: DateTime.now(),
       isMine: true,
     );
-    _messages.add(message);
+    _messages.insert(0, message);
     emit(MessagesLoaded(_messages));
     final result =
         await supabase.from('messages').insert(message.toMap()).execute();

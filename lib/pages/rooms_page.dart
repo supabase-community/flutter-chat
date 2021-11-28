@@ -69,7 +69,7 @@ class RoomsPage extends StatelessWidget {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     )
-                                  : null,
+                                  : const Text('Room created'),
                             );
                           },
                         ),

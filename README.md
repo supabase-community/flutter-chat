@@ -7,7 +7,6 @@ With [WALRUS](https://github.com/supabase/walrus), Supabase now can have row lev
 ## SQL
 
 ```sql
-
 -- *** Table definitions ***
 
 create table if not exists public.users (
@@ -21,7 +20,8 @@ create table if not exists public.users (
 comment on table public.users is 'Holds all of users profile information';
 
 create table if not exists public.rooms (
-    id uuid not null primary key DEFAULT uuid_generate_v4(),
+    id uuid not null primary key default uuid_generate_v4(),
+    creator_id uuid references public.users not null,
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null
 );
 comment on table public.rooms is 'Holds chat rooms';
@@ -64,9 +64,11 @@ create policy "Can update user" on public.users for update using (auth.uid() = i
 
 
 alter table public.rooms enable row level security;
-create policy "Users can view rooms" on public.rooms for select using (true);
-create policy "Users can create new rooms." on public.rooms for insert with check (true);
-
+create policy "Users can view rooms created by themselves" on public.rooms for select using (creator_id = auth.uid());
+create policy "Users can view rooms" on public.rooms for select using (
+    id in (select user_room_set())
+);
+create policy "Users can create new rooms." on public.rooms for insert with check (creator_id = auth.uid());
 
 
 alter table public.user_room enable row level security;
@@ -144,7 +146,7 @@ create or replace function create_new_room(opponent_uid uuid) returns uuid as $$
 
         if not found then
             -- Create a new room
-            insert into public.rooms default values
+            insert into public.rooms (creator_id) values(auth.uid())
             returning id into new_room_id;
 
             -- Insert the caller user into the new room
