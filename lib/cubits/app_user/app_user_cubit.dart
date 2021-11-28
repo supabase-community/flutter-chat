@@ -49,7 +49,6 @@ class AppUserCubit extends Cubit<AppUserState> {
     required String name,
   }) async {
     try {
-      emit(AppUserUpdating());
       final updates = {'id': _selfUserId, 'name': name};
       final res = await supabase.from('users').upsert(updates).execute();
       final error = res.error;

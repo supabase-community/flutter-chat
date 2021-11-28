@@ -4,7 +4,7 @@ import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
 import 'package:supabase_quickstart/pages/splash_page.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
-class AccountPage extends StatefulWidget {
+class AccountPage extends StatelessWidget {
   const AccountPage({Key? key, required this.isRegistering}) : super(key: key);
 
   static Route<void> route({bool isRegistering = false}) {
@@ -16,15 +16,58 @@ class AccountPage extends StatefulWidget {
   final bool isRegistering;
 
   @override
-  _AccountPageState createState() => _AccountPageState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile'),
+      ),
+      body: BlocBuilder<AppUserCubit, AppUserState>(
+        builder: (context, state) {
+          if (state is AppUserInitial) {
+            return preloader;
+          } else if (state is AppUserUpdating) {
+            return preloader;
+          } else if (state is AppUserLoaded) {
+            return _ProfileEditingWidget(
+              isRegistering: isRegistering,
+              initialUserName: state.self.name,
+            );
+          } else if (state is AppUserNoProfile) {
+            return _ProfileEditingWidget(
+              isRegistering: isRegistering,
+            );
+          }
+          throw UnimplementedError();
+        },
+      ),
+    );
+  }
 }
 
-class _AccountPageState extends State<AccountPage> {
+class _ProfileEditingWidget extends StatefulWidget {
+  const _ProfileEditingWidget({
+    Key? key,
+    required this.isRegistering,
+    this.initialUserName = '',
+  }) : super(key: key);
+
+  final bool isRegistering;
+  final String initialUserName;
+
+  @override
+  __ProfileEditingWidgetState createState() => __ProfileEditingWidgetState();
+}
+
+class __ProfileEditingWidgetState extends State<_ProfileEditingWidget> {
   String userName = '';
+  bool isLoading = false;
 
   /// Called when user taps `Update` button
   Future<void> _updateProfile() async {
     try {
+      setState(() {
+        isLoading = true;
+      });
       await BlocProvider.of<AppUserCubit>(context)
           .updateProfile(name: userName);
       if (widget.isRegistering) {
@@ -34,6 +77,9 @@ class _AccountPageState extends State<AccountPage> {
         Navigator.of(context).pop();
       }
     } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
       context.showErrorSnackBar(message: 'Failed to update profile');
     }
   }
@@ -50,43 +96,27 @@ class _AccountPageState extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-      ),
-      body: BlocBuilder<AppUserCubit, AppUserState>(
-        builder: (context, state) {
-          if (state is AppUserInitial) {
-            return preloader;
-          } else if (state is AppUserUpdating) {
-            return preloader;
-          } else if (state is AppUserLoaded) {
-            return ListView(
-              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-              children: [
-                TextFormField(
-                  initialValue: state.self.name,
-                  onChanged: (val) {
-                    userName = val;
-                  },
-                  decoration: const InputDecoration(labelText: 'User Name'),
-                ),
-                const SizedBox(height: 18),
-                ElevatedButton(
-                  onPressed: _updateProfile,
-                  child: const Text('Save'),
-                ),
-                const SizedBox(height: 18),
-                TextButton(
-                  onPressed: _signOut,
-                  child: const Text('Sign Out'),
-                ),
-              ],
-            );
-          }
-          throw UnimplementedError();
-        },
-      ),
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+      children: [
+        TextFormField(
+          initialValue: widget.initialUserName,
+          onChanged: (val) {
+            userName = val;
+          },
+          decoration: const InputDecoration(labelText: 'User Name'),
+        ),
+        const SizedBox(height: 18),
+        ElevatedButton(
+          onPressed: isLoading ? null : _updateProfile,
+          child: const Text('Save'),
+        ),
+        const SizedBox(height: 18),
+        TextButton(
+          onPressed: isLoading ? null : _signOut,
+          child: const Text('Sign Out'),
+        ),
+      ],
     );
   }
 }
