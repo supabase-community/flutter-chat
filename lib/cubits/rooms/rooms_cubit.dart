@@ -106,7 +106,7 @@ class RoomCubit extends Cubit<RoomState> {
     required String roomId,
   }) {
     _recentMessageSubscriptions[roomId] = supabase
-        .from('messages')
+        .from('messages:room_id=eq.$roomId')
         .stream()
         .order('created_at')
         .limit(1)

@@ -52,6 +52,17 @@ class ChatPage extends StatelessWidget {
                 const _MessageBar(),
               ],
             );
+          } else if (state is MessagesEmpty) {
+            return Column(
+              children: const [
+                Expanded(
+                  child: Center(
+                    child: Text('Start your conversation now :)'),
+                  ),
+                ),
+                _MessageBar(),
+              ],
+            );
           } else if (state is MessagesError) {
             return Center(child: Text(state.message));
           }

@@ -10,6 +10,8 @@ class MessagesLoaded extends MessagesState {
   final List<Message> messages;
 }
 
+class MessagesEmpty extends MessagesState {}
+
 class MessagesError extends MessagesState {
   MessagesError(this.message);
   final String message;

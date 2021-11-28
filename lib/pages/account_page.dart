@@ -20,12 +20,11 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  final _usernameController = TextEditingController();
+  String userName = '';
 
   /// Called when user taps `Update` button
   Future<void> _updateProfile() async {
     try {
-      final userName = _usernameController.text;
       await BlocProvider.of<AppUserCubit>(context)
           .updateProfile(name: userName);
       if (widget.isRegistering) {
@@ -50,34 +49,26 @@ class _AccountPageState extends State<AccountPage> {
   }
 
   @override
-  void dispose() {
-    _usernameController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
       ),
-      body: BlocConsumer<AppUserCubit, AppUserState>(
-        listener: (context, state) {
-          if (state is AppUserLoaded) {
-            _usernameController.text = state.self.name;
-          }
-        },
+      body: BlocBuilder<AppUserCubit, AppUserState>(
         builder: (context, state) {
           if (state is AppUserInitial) {
             return preloader;
           } else if (state is AppUserUpdating) {
             return preloader;
-          } else {
+          } else if (state is AppUserLoaded) {
             return ListView(
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
               children: [
                 TextFormField(
-                  controller: _usernameController,
+                  initialValue: state.self.name,
+                  onChanged: (val) {
+                    userName = val;
+                  },
                   decoration: const InputDecoration(labelText: 'User Name'),
                 ),
                 const SizedBox(height: 18),
@@ -93,6 +84,7 @@ class _AccountPageState extends State<AccountPage> {
               ],
             );
           }
+          throw UnimplementedError();
         },
       ),
     );

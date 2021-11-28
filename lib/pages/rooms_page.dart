@@ -130,14 +130,21 @@ class _NewUsers extends StatelessWidget {
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          child: Text(user.name.substring(0, 2)),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(user.name),
-                      ],
+                    child: SizedBox(
+                      width: 70,
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            child: Text(user.name.substring(0, 2)),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            user.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ))
