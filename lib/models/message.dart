@@ -20,7 +20,7 @@ class Message {
   Map<String, dynamic> toMap() {
     return {
       'user_id': userId,
-      'roomId': roomId,
+      'room_id': roomId,
       'text': text,
     };
   }

@@ -26,26 +26,23 @@ class AppUserCubit extends Cubit<AppUserState> {
     if (isSelf) {
       _selfUserId = userId;
     }
-    try {
-      _appUserSubscriptions[userId] = supabase
-          .from('users:id=eq.$userId')
-          .stream()
-          .execute()
-          .map((data) => data.isEmpty ? null : AppUser.fromMap(data.first))
-          .listen((appUser) {
-        _appUsers[userId] = appUser;
-        if (isSelf) {
-          _self = appUser;
-          if (_self != null) {
-            emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
-          } else {
-            emit(AppUserNoProfile());
-          }
-        }
-      });
-    } catch (e) {
-      print(e);
-    }
+
+    _appUserSubscriptions[userId] = supabase
+        .from('users:id=eq.$userId')
+        .stream()
+        .execute()
+        .map((data) => data.isEmpty ? null : AppUser.fromMap(data.first))
+        .listen((appUser) {
+      _appUsers[userId] = appUser;
+      if (isSelf) {
+        _self = appUser;
+      }
+      if (_self != null) {
+        emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
+      } else {
+        emit(AppUserNoProfile());
+      }
+    });
   }
 
   Future<void> updateProfile({

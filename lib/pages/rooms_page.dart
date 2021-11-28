@@ -59,7 +59,7 @@ class RoomsPage extends StatelessWidget {
                               leading: CircleAvatar(
                                 child: opponent == null
                                     ? preloader
-                                    : Text(opponent.name),
+                                    : Text(opponent.name.substring(0, 2)),
                               ),
                               title:
                                   opponent == null ? null : Text(opponent.name),

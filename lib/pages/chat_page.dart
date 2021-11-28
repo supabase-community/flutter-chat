@@ -38,12 +38,14 @@ class ChatPage extends StatelessWidget {
             final messages = state.messages;
             return Column(
               children: [
-                ListView.builder(
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    return _ChatBubble(message: message);
-                  },
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      return _ChatBubble(message: message);
+                    },
+                  ),
                 ),
                 const _MessageBar(),
               ],
@@ -79,6 +81,8 @@ class _MessageBarState extends State<_MessageBar> {
         children: [
           Expanded(
             child: TextFormField(
+              maxLines: null,
+              autofocus: true,
               controller: _textController,
               decoration: const InputDecoration(
                 hintText: 'Type a message',
@@ -88,8 +92,7 @@ class _MessageBarState extends State<_MessageBar> {
             ),
           ),
           TextButton(
-            onPressed: () =>
-                _textController.text.isEmpty ? null : _submitMessage(),
+            onPressed: () => _submitMessage(),
             child: const Text('Send'),
           ),
         ],
@@ -99,10 +102,6 @@ class _MessageBarState extends State<_MessageBar> {
 
   @override
   void initState() {
-    _textController = TextEditingController()
-      ..addListener(() {
-        setState(() {});
-      });
     super.initState();
   }
 
@@ -114,7 +113,11 @@ class _MessageBarState extends State<_MessageBar> {
 
   void _submitMessage() async {
     final text = _textController.text;
+    if (text.isEmpty) {
+      return;
+    }
     BlocProvider.of<MessagesCubit>(context).submitMessage(text);
+    _textController.clear();
   }
 }
 
@@ -133,8 +136,14 @@ class _ChatBubble extends StatelessWidget {
       const SizedBox(width: 12),
       Flexible(
         child: Container(
+          padding: const EdgeInsets.symmetric(
+            vertical: 8,
+            horizontal: 12,
+          ),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor,
+            color: message.isMine
+                ? Theme.of(context).primaryColor
+                : Theme.of(context).colorScheme.primary,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(message.text),
@@ -150,6 +159,8 @@ class _ChatBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 18),
       child: Row(
+        mainAxisAlignment:
+            message.isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: chatContents,
       ),
     );
