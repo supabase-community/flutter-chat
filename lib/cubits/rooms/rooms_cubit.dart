@@ -138,12 +138,10 @@ class RoomCubit extends Cubit<RoomState> {
 
   /// Creates or returns an existing roomID of both participants
   Future<String> createRoom(String opponentUserId) async {
-    emit(RoomsLoading());
     final res = await supabase.rpc('create_new_room',
         params: {'opponent_uid': opponentUserId}).execute();
     final error = res.error;
     if (error != null) {
-      emit(RoomsError('Error creating a new room'));
       throw error;
     }
     emit(RoomsLoaded(rooms: _rooms, newUsers: _newUsers));

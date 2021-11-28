@@ -75,12 +75,10 @@ alter table public.user_room enable row level security;
 create policy "Only the participants can view who is in the room." on public.user_room for select using (
     room_id in (select user_room_set())
 );
-create policy "Users can add themself if the room is empty." on public.user_room for insert with check (
-    is_room_empty(room_id)
-    and user_id = auth.uid()
-);
-create policy "Users can add other users to rooms they are in." on public.user_room for insert with check (
-    room_id in (select user_room_set())
+create policy "Room creator can add people into the room." on public.user_room for insert with check (
+    auth.uid() in (
+        select rooms.creator_id from rooms where rooms.id = room_id
+    )
 );
 
 

@@ -123,7 +123,10 @@ class _NewUsers extends StatelessWidget {
                       final roomId = await BlocProvider.of<RoomCubit>(context)
                           .createRoom(user.id);
                       Navigator.of(context).push(ChatPage.route(roomId));
-                    } catch (_) {}
+                    } catch (_) {
+                      context.showErrorSnackBar(
+                          message: 'Failed creating a new room');
+                    }
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
