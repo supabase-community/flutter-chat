@@ -144,6 +144,7 @@ class RoomCubit extends Cubit<RoomState> {
     final error = res.error;
     if (error != null) {
       emit(RoomsError('Error creating a new room'));
+      throw error;
     }
     emit(RoomsLoaded(rooms: _rooms, newUsers: _newUsers));
     return res.data as String;

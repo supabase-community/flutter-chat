@@ -19,7 +19,7 @@ class UserAvatar extends StatelessWidget {
         if (state is AppUserLoaded) {
           final user = state.appUsers[userId];
           return CircleAvatar(
-            child: user == null ? preloader : Text(user.name),
+            child: user == null ? preloader : Text(user.name.substring(0, 2)),
           );
         } else {
           return const CircleAvatar(child: preloader);

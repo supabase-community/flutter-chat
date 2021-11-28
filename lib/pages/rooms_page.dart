@@ -47,25 +47,28 @@ class RoomsPage extends StatelessWidget {
                     children: [
                       _NewUsers(newUsers: newUsers),
                       Expanded(
-                        child: ListView.builder(itemBuilder: (context, index) {
-                          final room = rooms[index];
-                          final opponent = appUsers[room.opponentUserId];
+                        child: ListView.builder(
+                          itemCount: rooms.length,
+                          itemBuilder: (context, index) {
+                            final room = rooms[index];
+                            final opponent = appUsers[room.opponentUserId];
 
-                          return ListTile(
-                            onTap: () => Navigator.of(context)
-                                .push(ChatPage.route(room.id)),
-                            leading: CircleAvatar(
-                              child: opponent == null
-                                  ? preloader
-                                  : Text(opponent.name),
-                            ),
-                            title:
-                                opponent == null ? null : Text(opponent.name),
-                            subtitle: room.lastMessage != null
-                                ? Text(room.lastMessage!.text)
-                                : null,
-                          );
-                        }),
+                            return ListTile(
+                              onTap: () => Navigator.of(context)
+                                  .push(ChatPage.route(room.id)),
+                              leading: CircleAvatar(
+                                child: opponent == null
+                                    ? preloader
+                                    : Text(opponent.name),
+                              ),
+                              title:
+                                  opponent == null ? null : Text(opponent.name),
+                              subtitle: room.lastMessage != null
+                                  ? Text(room.lastMessage!.text)
+                                  : null,
+                            );
+                          },
+                        ),
                       ),
                     ],
                   );
@@ -112,9 +115,11 @@ class _NewUsers extends StatelessWidget {
         children: newUsers
             .map<Widget>((user) => InkWell(
                   onTap: () async {
-                    final roomId = await BlocProvider.of<RoomCubit>(context)
-                        .createRoom(user.id);
-                    Navigator.of(context).push(ChatPage.route(roomId));
+                    try {
+                      final roomId = await BlocProvider.of<RoomCubit>(context)
+                          .createRoom(user.id);
+                      Navigator.of(context).push(ChatPage.route(roomId));
+                    } catch (_) {}
                   },
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
