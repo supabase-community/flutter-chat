@@ -127,7 +127,7 @@ class RoomCubit extends Cubit<RoomState> {
             a.lastMessage != null ? a.lastMessage!.createdAt : a.createdAt;
         final bTimeStamp =
             b.lastMessage != null ? b.lastMessage!.createdAt : b.createdAt;
-        return aTimeStamp.compareTo(bTimeStamp);
+        return bTimeStamp.compareTo(aTimeStamp);
       });
       emit(RoomsLoaded(
         newUsers: _newUsers,

@@ -89,13 +89,14 @@ class _MessageBarState extends State<_MessageBar> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.black,
+      color: Theme.of(context).colorScheme.surface,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
           children: [
             Expanded(
               child: TextFormField(
+                keyboardType: TextInputType.text,
                 maxLines: null,
                 autofocus: true,
                 controller: _textController,
@@ -159,8 +160,8 @@ class _ChatBubble extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: message.isMine
-                ? Theme.of(context).primaryColor
-                : Theme.of(context).colorScheme.primary,
+                ? Theme.of(context).colorScheme.surface
+                : Theme.of(context).primaryColor,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(message.text),
