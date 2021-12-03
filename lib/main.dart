@@ -9,9 +9,9 @@ Future<void> main() async {
 
   await Supabase.initialize(
     // TODO: Replace credentials with your own
-    url: 'https://nlbsnpoablmsxwkdbmer.supabase.co',
+    url: 'https://lbzgspxicejixhavdlsu.supabase.co',
     anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYyOTE5ODEwMiwiZXhwIjoxOTQ0Nzc0MTAyfQ.XZWLzz95pyU9msumQNsZKNBXfyss-g214iTVAwyQLPA',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYzODQ5NDM1OSwiZXhwIjoxOTU0MDcwMzU5fQ.qZgVb9X-sfRQvUQ3diqEmTpy00phfPUMBD5L35TA4lI',
   );
   runApp(const MyApp());
 }

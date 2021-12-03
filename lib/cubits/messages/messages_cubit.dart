@@ -58,16 +58,16 @@ class MessagesCubit extends Cubit<MessagesState> {
       createdAt: DateTime.now(),
       isMine: true,
     );
-    // _messages.insert(0, message);
-    // emit(MessagesLoaded(_messages));
+    _messages.insert(0, message);
+    emit(MessagesLoaded(_messages));
     final result =
         await supabase.from('messages').insert(message.toMap()).execute();
-    // final error = result.error;
-    // if (error != null) {
-    //   emit(MessagesError('Error submitting message.'));
-    //   _messages.removeLast();
-    //   emit(MessagesLoaded(_messages));
-    // }
+    final error = result.error;
+    if (error != null) {
+      emit(MessagesError('Error submitting message.'));
+      _messages.removeLast();
+      emit(MessagesLoaded(_messages));
+    }
   }
 
   @override

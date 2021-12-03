@@ -89,7 +89,7 @@ class _MessageBarState extends State<_MessageBar> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Theme.of(context).colorScheme.surface,
+      color: Theme.of(context).colorScheme.onSurface,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
