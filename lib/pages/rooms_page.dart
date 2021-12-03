@@ -6,6 +6,7 @@ import 'package:supabase_quickstart/models/app_user.dart';
 import 'package:supabase_quickstart/pages/account_page.dart';
 import 'package:supabase_quickstart/pages/chat_page.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
+import 'package:timeago/timeago.dart';
 
 /// Displays the past chat threads
 class RoomsPage extends StatelessWidget {
@@ -70,6 +71,10 @@ class RoomsPage extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                     )
                                   : const Text('Room created'),
+                              trailing: room.lastMessage?.createdAt != null
+                                  ? Text(format(room.lastMessage!.createdAt,
+                                      locale: 'en_short'))
+                                  : null,
                             );
                           },
                         ),
@@ -114,6 +119,7 @@ class _NewUsers extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       scrollDirection: Axis.horizontal,
       child: Row(
         children: newUsers
@@ -131,7 +137,7 @@ class _NewUsers extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: SizedBox(
-                      width: 70,
+                      width: 60,
                       child: Column(
                         children: [
                           CircleAvatar(

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_quickstart/models/message.dart';
 import 'package:supabase_quickstart/utils/constants.dart';
 
@@ -20,6 +21,11 @@ class MessagesCubit extends Cubit<MessagesState> {
     _roomId = roomId;
 
     _userId = supabase.auth.user()!.id;
+
+    final some =
+        supabase.from('messages').on(SupabaseEventTypes.all, (payload) {
+      print(payload);
+    });
 
     _messagesSubscription = supabase
         .from('messages:room_id=eq.$roomId')
@@ -52,16 +58,16 @@ class MessagesCubit extends Cubit<MessagesState> {
       createdAt: DateTime.now(),
       isMine: true,
     );
-    _messages.insert(0, message);
-    emit(MessagesLoaded(_messages));
+    // _messages.insert(0, message);
+    // emit(MessagesLoaded(_messages));
     final result =
         await supabase.from('messages').insert(message.toMap()).execute();
-    final error = result.error;
-    if (error != null) {
-      emit(MessagesError('Error submitting message.'));
-      _messages.removeLast();
-      emit(MessagesLoaded(_messages));
-    }
+    // final error = result.error;
+    // if (error != null) {
+    //   emit(MessagesError('Error submitting message.'));
+    //   _messages.removeLast();
+    //   emit(MessagesLoaded(_messages));
+    // }
   }
 
   @override

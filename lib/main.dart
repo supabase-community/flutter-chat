@@ -9,8 +9,9 @@ Future<void> main() async {
 
   await Supabase.initialize(
     // TODO: Replace credentials with your own
-    url: '[YOUR_SUPABASE_URL]',
-    anonKey: '[YOUR_SUPABASE_ANNON_KEY]',
+    url: 'https://nlbsnpoablmsxwkdbmer.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYyOTE5ODEwMiwiZXhwIjoxOTQ0Nzc0MTAyfQ.XZWLzz95pyU9msumQNsZKNBXfyss-g214iTVAwyQLPA',
   );
   runApp(const MyApp());
 }
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'SupaChat',
         theme: ThemeData.dark().copyWith(
-          primaryColor: Colors.green,
+          colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.green),
           textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(
               primary: Colors.green,
