@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
-import 'package:supabase_quickstart/utils/constants.dart';
+import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_chat/utils/constants.dart';
 
 /// Widget that will display a user's avatar
 class UserAvatar extends StatelessWidget {

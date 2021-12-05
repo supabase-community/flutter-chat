@@ -1,4 +1,4 @@
-name: supabase_quickstart
+name: supabase_chat
 description: Sample chat app using Supabase and Flutter
 
 publish_to: 'none'

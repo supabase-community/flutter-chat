@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
-import 'package:supabase_quickstart/pages/splash_page.dart';
+import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_chat/pages/splash_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
     // TODO: Replace credentials with your own
-    url: 'https://lbzgspxicejixhavdlsu.supabase.co',
+    url: 'https://nlbsnpoablmsxwkdbmer.supabase.co',
     anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYzODQ5NDM1OSwiZXhwIjoxOTU0MDcwMzU5fQ.qZgVb9X-sfRQvUQ3diqEmTpy00phfPUMBD5L35TA4lI',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYyOTE5ODEwMiwiZXhwIjoxOTQ0Nzc0MTAyfQ.XZWLzz95pyU9msumQNsZKNBXfyss-g214iTVAwyQLPA',
   );
   runApp(const MyApp());
 }

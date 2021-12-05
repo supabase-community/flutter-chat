@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:supabase_quickstart/pages/login_page.dart';
+import 'package:supabase_chat/pages/login_page.dart';
 
 class AuthRequiredState<T extends StatefulWidget>
     extends SupabaseAuthRequiredState<T> {

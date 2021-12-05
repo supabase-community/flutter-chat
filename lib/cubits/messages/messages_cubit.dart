@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:supabase_quickstart/models/message.dart';
-import 'package:supabase_quickstart/utils/constants.dart';
+import 'package:supabase_chat/models/message.dart';
+import 'package:supabase_chat/utils/constants.dart';
 
 part 'messages_state.dart';
 

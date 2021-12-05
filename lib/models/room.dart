@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:supabase_quickstart/models/message.dart';
+import 'package:supabase_chat/models/message.dart';
 
 class Room {
   Room({

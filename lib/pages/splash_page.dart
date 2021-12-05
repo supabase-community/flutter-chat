@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_quickstart/components/auth_state.dart';
-import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
-import 'package:supabase_quickstart/pages/account_page.dart';
-import 'package:supabase_quickstart/pages/rooms_page.dart';
+import 'package:supabase_chat/components/auth_state.dart';
+import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_chat/pages/account_page.dart';
+import 'package:supabase_chat/pages/rooms_page.dart';
 
 /// Page to redirect users to the correct destinations
 class SplashPage extends StatefulWidget {

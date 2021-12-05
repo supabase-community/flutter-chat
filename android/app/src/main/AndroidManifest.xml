@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.supabase_flutter">
    <application
-        android:label="supabase_flutter"
+        android:label="Chat"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

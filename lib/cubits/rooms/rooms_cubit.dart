@@ -4,11 +4,11 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
-import 'package:supabase_quickstart/models/app_user.dart';
-import 'package:supabase_quickstart/models/message.dart';
-import 'package:supabase_quickstart/models/room.dart';
-import 'package:supabase_quickstart/utils/constants.dart';
+import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_chat/models/app_user.dart';
+import 'package:supabase_chat/models/message.dart';
+import 'package:supabase_chat/models/room.dart';
+import 'package:supabase_chat/utils/constants.dart';
 
 part 'rooms_state.dart';
 

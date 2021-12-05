@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_quickstart/components/user_avatar.dart';
-import 'package:supabase_quickstart/cubits/messages/messages_cubit.dart';
-import 'package:supabase_quickstart/models/message.dart';
-import 'package:supabase_quickstart/utils/constants.dart';
+import 'package:supabase_chat/components/user_avatar.dart';
+import 'package:supabase_chat/cubits/messages/messages_cubit.dart';
+import 'package:supabase_chat/models/message.dart';
+import 'package:supabase_chat/utils/constants.dart';
 import 'package:timeago/timeago.dart';
 
 /// Page to chat with someone.
@@ -160,7 +160,7 @@ class _ChatBubble extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: message.isMine
-                ? Theme.of(context).colorScheme.surface
+                ? Theme.of(context).colorScheme.primary
                 : Theme.of(context).primaryColor,
             borderRadius: BorderRadius.circular(8),
           ),

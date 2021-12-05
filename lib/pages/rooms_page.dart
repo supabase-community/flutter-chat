@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_quickstart/cubits/app_user/app_user_cubit.dart';
-import 'package:supabase_quickstart/cubits/rooms/rooms_cubit.dart';
-import 'package:supabase_quickstart/models/app_user.dart';
-import 'package:supabase_quickstart/pages/account_page.dart';
-import 'package:supabase_quickstart/pages/chat_page.dart';
-import 'package:supabase_quickstart/utils/constants.dart';
+import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_chat/cubits/rooms/rooms_cubit.dart';
+import 'package:supabase_chat/models/app_user.dart';
+import 'package:supabase_chat/pages/account_page.dart';
+import 'package:supabase_chat/pages/chat_page.dart';
+import 'package:supabase_chat/utils/constants.dart';
 import 'package:timeago/timeago.dart';
 
 /// Displays the past chat threads
