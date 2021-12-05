@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'SupaChat',
         theme: ThemeData.dark().copyWith(
-          colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.green),
+          primaryColor: Colors.green,
           textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(
               primary: Colors.green,
