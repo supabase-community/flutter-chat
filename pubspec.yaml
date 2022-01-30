@@ -13,9 +13,9 @@ dependencies:
     sdk: flutter
 
   image_picker: ^0.8.4
-  supabase_flutter: ^0.2.9
+  supabase_flutter: ^0.2.12
   rxdart: ^0.27.2
-  flutter_bloc: ^8.0.0
+  flutter_bloc: ^8.0.1
   timeago: ^3.1.0
 
 dev_dependencies:
