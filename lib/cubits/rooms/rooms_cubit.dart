@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:meta/meta.dart';
 import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
 import 'package:supabase_chat/models/app_user.dart';
 import 'package:supabase_chat/models/message.dart';
@@ -56,21 +54,21 @@ class RoomCubit extends Cubit<RoomState> {
     /// Get realtime updates on rooms that the user is in
     _roomsSubscription = supabase
         .from('rooms')
-        .stream()
+        .stream(['id'])
         .execute()
         .map((data) => data.map(Room.fromMap).toList())
         .listen((rooms) {
-      for (final room in rooms) {
-        _getParticipants(context: context, roomId: room.id);
-        _getNewestMessage(context: context, roomId: room.id);
-      }
-      _rooms = rooms;
-      if (_rooms.isEmpty) {
-        emit(RoomsEmpty(newUsers: _newUsers));
-      } else {
-        emit(RoomsLoaded(newUsers: _newUsers, rooms: _rooms));
-      }
-    });
+          for (final room in rooms) {
+            _getParticipants(context: context, roomId: room.id);
+            _getNewestMessage(context: context, roomId: room.id);
+          }
+          _rooms = rooms;
+          if (_rooms.isEmpty) {
+            emit(RoomsEmpty(newUsers: _newUsers));
+          } else {
+            emit(RoomsLoaded(newUsers: _newUsers, rooms: _rooms));
+          }
+        });
   }
 
   /// Loads the participants in each room and their profile
@@ -83,22 +81,23 @@ class RoomCubit extends Cubit<RoomState> {
     }
     _participantsSubscription[roomId] = supabase
         .from('user_room:room_id=eq.$roomId')
-        .stream()
+        .stream(['id'])
         .execute()
         .map((data) => data.map((row) => row['user_id'] as String).toList())
         .listen((participantUserIds) {
-      final index = _rooms.indexWhere((room) => room.id == roomId);
-      final opponentUserId =
-          participantUserIds.singleWhere((element) => element != _userId);
-      _rooms[index] = _rooms[index].copyWith(opponentUserId: opponentUserId);
-      for (final userId in participantUserIds) {
-        BlocProvider.of<AppUserCubit>(context).getProfile(userId);
-      }
-      emit(RoomsLoaded(
-        newUsers: _newUsers,
-        rooms: _rooms,
-      ));
-    });
+          final index = _rooms.indexWhere((room) => room.id == roomId);
+          final opponentUserId =
+              participantUserIds.singleWhere((element) => element != _userId);
+          _rooms[index] =
+              _rooms[index].copyWith(opponentUserId: opponentUserId);
+          for (final userId in participantUserIds) {
+            BlocProvider.of<AppUserCubit>(context).getProfile(userId);
+          }
+          emit(RoomsLoaded(
+            newUsers: _newUsers,
+            rooms: _rooms,
+          ));
+        });
   }
 
   void _getNewestMessage({
@@ -107,7 +106,7 @@ class RoomCubit extends Cubit<RoomState> {
   }) {
     _recentMessageSubscriptions[roomId] = supabase
         .from('messages:room_id=eq.$roomId')
-        .stream()
+        .stream(['id'])
         .order('created_at')
         .limit(1)
         .execute()
@@ -118,22 +117,22 @@ class RoomCubit extends Cubit<RoomState> {
                 myUserId: _userId,
               ))
         .listen((message) {
-      final index = _rooms.indexWhere((room) => room.id == roomId);
-      _rooms[index] = _rooms[index].copyWith(lastMessage: message);
-      _rooms.sort((a, b) {
-        /// Sort according to the last message
-        /// Use the room createdAt when last message is not available
-        final aTimeStamp =
-            a.lastMessage != null ? a.lastMessage!.createdAt : a.createdAt;
-        final bTimeStamp =
-            b.lastMessage != null ? b.lastMessage!.createdAt : b.createdAt;
-        return bTimeStamp.compareTo(aTimeStamp);
-      });
-      emit(RoomsLoaded(
-        newUsers: _newUsers,
-        rooms: _rooms,
-      ));
-    });
+          final index = _rooms.indexWhere((room) => room.id == roomId);
+          _rooms[index] = _rooms[index].copyWith(lastMessage: message);
+          _rooms.sort((a, b) {
+            /// Sort according to the last message
+            /// Use the room createdAt when last message is not available
+            final aTimeStamp =
+                a.lastMessage != null ? a.lastMessage!.createdAt : a.createdAt;
+            final bTimeStamp =
+                b.lastMessage != null ? b.lastMessage!.createdAt : b.createdAt;
+            return bTimeStamp.compareTo(aTimeStamp);
+          });
+          emit(RoomsLoaded(
+            newUsers: _newUsers,
+            rooms: _rooms,
+          ));
+        });
   }
 
   /// Creates or returns an existing roomID of both participants

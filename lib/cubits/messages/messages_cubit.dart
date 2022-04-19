@@ -29,7 +29,7 @@ class MessagesCubit extends Cubit<MessagesState> {
 
     _messagesSubscription = supabase
         .from('messages:room_id=eq.$roomId')
-        .stream()
+        .stream(['id'])
         .order('created_at')
         .execute()
         .map((data) => data
@@ -39,13 +39,13 @@ class MessagesCubit extends Cubit<MessagesState> {
                 ))
             .toList())
         .listen((messages) {
-      _messages = messages;
-      if (_messages.isEmpty) {
-        emit(MessagesEmpty());
-      } else {
-        emit(MessagesLoaded(_messages));
-      }
-    });
+          _messages = messages;
+          if (_messages.isEmpty) {
+            emit(MessagesEmpty());
+          } else {
+            emit(MessagesLoaded(_messages));
+          }
+        });
   }
 
   Future<void> submitMessage(String text) async {

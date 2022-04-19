@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase/supabase.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
 import 'package:supabase_chat/pages/login_page.dart';

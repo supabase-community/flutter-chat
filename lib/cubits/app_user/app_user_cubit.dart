@@ -29,20 +29,20 @@ class AppUserCubit extends Cubit<AppUserState> {
 
     _appUserSubscriptions[userId] = supabase
         .from('users:id=eq.$userId')
-        .stream()
+        .stream(['id'])
         .execute()
         .map((data) => data.isEmpty ? null : AppUser.fromMap(data.first))
         .listen((appUser) {
-      _appUsers[userId] = appUser;
-      if (isSelf) {
-        _self = appUser;
-      }
-      if (_self != null) {
-        emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
-      } else {
-        emit(AppUserNoProfile());
-      }
-    });
+          _appUsers[userId] = appUser;
+          if (isSelf) {
+            _self = appUser;
+          }
+          if (_self != null) {
+            emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
+          } else {
+            emit(AppUserNoProfile());
+          }
+        });
   }
 
   Future<void> updateProfile({
