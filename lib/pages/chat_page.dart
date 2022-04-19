@@ -134,7 +134,7 @@ class _MessageBarState extends State<_MessageBar> {
     if (text.isEmpty) {
       return;
     }
-    BlocProvider.of<MessagesCubit>(context).submitMessage(text);
+    BlocProvider.of<MessagesCubit>(context).sendMessage(text);
     _textController.clear();
   }
 }

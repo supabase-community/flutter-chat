@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_chat/models/message.dart';
 import 'package:supabase_chat/utils/constants.dart';
 
@@ -22,14 +21,9 @@ class MessagesCubit extends Cubit<MessagesState> {
 
     _userId = supabase.auth.user()!.id;
 
-    final some =
-        supabase.from('messages').on(SupabaseEventTypes.all, (payload) {
-      print(payload);
-    });
-
     _messagesSubscription = supabase
         .from('messages:room_id=eq.$roomId')
-        .stream(['id'])
+        .stream(['room_id', 'user_id'])
         .order('created_at')
         .execute()
         .map((data) => data
@@ -48,7 +42,7 @@ class MessagesCubit extends Cubit<MessagesState> {
         });
   }
 
-  Future<void> submitMessage(String text) async {
+  Future<void> sendMessage(String text) async {
     /// Add message to present to the user right away
     final message = Message(
       id: '',
