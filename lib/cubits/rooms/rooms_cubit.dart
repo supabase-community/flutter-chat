@@ -100,6 +100,7 @@ class RoomCubit extends Cubit<RoomState> {
         });
   }
 
+  // Setup listeners to listen to the most recent message in each room
   void _getNewestMessage({
     required BuildContext context,
     required String roomId,
