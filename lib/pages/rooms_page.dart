@@ -6,6 +6,7 @@ import 'package:supabase_chat/models/app_user.dart';
 import 'package:supabase_chat/pages/account_page.dart';
 import 'package:supabase_chat/pages/chat_page.dart';
 import 'package:supabase_chat/utils/constants.dart';
+import 'package:supabase_chat/utils/messages_provider.dart';
 import 'package:timeago/timeago.dart';
 
 /// Displays the past chat threads
@@ -13,9 +14,11 @@ class RoomsPage extends StatelessWidget {
   const RoomsPage({Key? key}) : super(key: key);
 
   static Route<void> route() {
+    final messageProvider = MessagesProvider();
     return MaterialPageRoute(
       builder: (context) => BlocProvider<RoomCubit>(
-        create: (context) => RoomCubit()..getRooms(context),
+        create: (context) =>
+            RoomCubit(messagesProvider: messageProvider)..getRooms(context),
         child: const RoomsPage(),
       ),
     );
