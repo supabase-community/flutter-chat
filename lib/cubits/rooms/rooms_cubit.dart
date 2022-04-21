@@ -149,6 +149,7 @@ class RoomCubit extends Cubit<RoomState> {
     for (final listener in _participantsSubscription.values) {
       listener.cancel();
     }
+    _messagesProvider.clear();
     return super.close();
   }
 }

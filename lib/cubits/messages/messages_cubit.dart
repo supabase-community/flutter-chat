@@ -4,11 +4,16 @@ import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:supabase_chat/models/message.dart';
 import 'package:supabase_chat/utils/constants.dart';
+import 'package:supabase_chat/utils/messages_provider.dart';
 
 part 'messages_state.dart';
 
 class MessagesCubit extends Cubit<MessagesState> {
-  MessagesCubit() : super(MessagesInitial());
+  MessagesCubit({required MessagesProvider messagesProvider})
+      : _messagesProvider = messagesProvider,
+        super(MessagesInitial());
+
+  final MessagesProvider _messagesProvider;
 
   StreamSubscription<List<Message>>? _messagesSubscription;
   List<Message> _messages = [];
@@ -21,25 +26,15 @@ class MessagesCubit extends Cubit<MessagesState> {
 
     _userId = supabase.auth.user()!.id;
 
-    _messagesSubscription = supabase
-        .from('messages:room_id=eq.$roomId')
-        .stream(['room_id', 'user_id'])
-        .order('created_at')
-        .execute()
-        .map((data) => data
-            .map((row) => Message.fromMap(
-                  map: row,
-                  myUserId: _userId,
-                ))
-            .toList())
-        .listen((messages) {
-          _messages = messages;
-          if (_messages.isEmpty) {
-            emit(MessagesEmpty());
-          } else {
-            emit(MessagesLoaded(_messages));
-          }
-        });
+    _messagesSubscription =
+        _messagesProvider.subscribe(roomId).listen((messages) {
+      _messages = messages;
+      if (_messages.isEmpty) {
+        emit(MessagesEmpty());
+      } else {
+        emit(MessagesLoaded(_messages));
+      }
+    });
   }
 
   Future<void> sendMessage(String text) async {

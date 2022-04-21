@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:rxdart/subjects.dart';
 import 'package:supabase_chat/models/message.dart';
 import 'package:supabase_chat/utils/constants.dart';
 
@@ -21,13 +22,12 @@ class MessagesProvider {
   Stream<List<Message>> subscribe(String roomId) {
     _userId ??= supabase.auth.user()!.id;
 
-    _messageControllers[roomId] ??= StreamController.broadcast();
+    _messageControllers[roomId] ??= BehaviorSubject();
 
     _messageSubscriptions[roomId] ??= supabase
         .from('messages:room_id=eq.$roomId')
         .stream(['id'])
         .order('created_at')
-        .limit(1)
         .execute()
         .map<List<Message>>(
           (data) => data
