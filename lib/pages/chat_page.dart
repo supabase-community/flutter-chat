@@ -166,7 +166,7 @@ class _ChatBubble extends StatelessWidget {
                 message.isMine ? Colors.black : Theme.of(context).primaryColor,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Text(message.text),
+          child: Text(message.content),
         ),
       ),
       const SizedBox(width: 12),

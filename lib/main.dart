@@ -9,13 +9,13 @@ Future<void> main() async {
 
   await Supabase.initialize(
     // TODO: Replace credentials with your own
-    url: 'YOUR_SUPABASE_URL',
-    anonKey: 'YOUR_SUPABASE_ANONKEY',
+    url: 'https://nlbsnpoablmsxwkdbmer.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTYyOTE5ODEwMiwiZXhwIjoxOTQ0Nzc0MTAyfQ.XZWLzz95pyU9msumQNsZKNBXfyss-g214iTVAwyQLPA',
   );
   runApp(const MyApp());
 }
 
-/// Entry of the entire app
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 

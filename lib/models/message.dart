@@ -3,7 +3,7 @@ class Message {
     required this.id,
     required this.roomId,
     required this.userId,
-    required this.text,
+    required this.content,
     required this.createdAt,
     required this.isMine,
   });
@@ -11,7 +11,7 @@ class Message {
   final String id;
   final String userId;
   final String roomId;
-  final String text;
+  final String content;
   final DateTime createdAt;
 
   /// Whether the message is sent by the user or not.
@@ -21,7 +21,7 @@ class Message {
     return {
       'user_id': userId,
       'room_id': roomId,
-      'text': text,
+      'content': content,
     };
   }
 
@@ -33,7 +33,7 @@ class Message {
       id: map['id'],
       roomId: map['room_id'],
       userId: map['user_id'],
-      text: map['text'],
+      content: map['content'],
       createdAt: DateTime.parse(map['created_at']),
       isMine: myUserId == map['user_id'],
     );
@@ -51,7 +51,7 @@ class Message {
       id: id ?? this.id,
       userId: userId ?? this.userId,
       roomId: roomId ?? this.roomId,
-      text: text ?? this.text,
+      content: text ?? content,
       createdAt: createdAt ?? this.createdAt,
       isMine: isMine ?? this.isMine,
     );

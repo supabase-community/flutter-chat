@@ -43,7 +43,7 @@ class MessagesCubit extends Cubit<MessagesState> {
       id: '',
       roomId: _roomId,
       userId: _userId,
-      text: text,
+      content: text,
       createdAt: DateTime.now(),
       isMine: true,
     );
