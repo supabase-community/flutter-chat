@@ -8,9 +8,9 @@ class AccountPage extends StatelessWidget {
   const AccountPage({Key? key, required this.isRegistering}) : super(key: key);
 
   static Route<void> route({bool isRegistering = false}) {
-    return MaterialPageRoute(builder: (context) {
-      return AccountPage(isRegistering: isRegistering);
-    });
+    return MaterialPageRoute(
+      builder: (context) => AccountPage(isRegistering: isRegistering),
+    );
   }
 
   final bool isRegistering;
@@ -19,7 +19,7 @@ class AccountPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('Register'),
       ),
       body: BlocBuilder<AppUserCubit, AppUserState>(
         builder: (context, state) {

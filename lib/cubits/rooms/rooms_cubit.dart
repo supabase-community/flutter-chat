@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
-import 'package:supabase_chat/models/app_user.dart';
+import 'package:supabase_chat/models/profile.dart';
 import 'package:supabase_chat/models/message.dart';
 import 'package:supabase_chat/models/room.dart';
 import 'package:supabase_chat/utils/constants.dart';

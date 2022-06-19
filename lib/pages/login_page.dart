@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase/supabase.dart';
-import 'package:supabase_chat/components/auth_state.dart';
 import 'package:supabase_chat/utils/constants.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,7 +14,7 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends AuthState<LoginPage> {
+class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   late final TextEditingController _emailController;
 

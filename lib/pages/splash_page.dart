@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_chat/components/auth_state.dart';
 import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
-import 'package:supabase_chat/pages/account_page.dart';
+import 'package:supabase_chat/pages/register_page.dart';
 import 'package:supabase_chat/pages/rooms_page.dart';
 
 /// Page to redirect users to the correct destinations
@@ -18,11 +17,10 @@ class SplashPage extends StatefulWidget {
   SplashPageState createState() => SplashPageState();
 }
 
-class SplashPageState extends AuthState<SplashPage> {
+class SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    recoverSupabaseSession();
   }
 
   @override

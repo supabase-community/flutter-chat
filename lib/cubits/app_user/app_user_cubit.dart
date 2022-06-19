@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:supabase_chat/models/app_user.dart';
+import 'package:supabase_chat/models/profile.dart';
 import 'package:supabase_chat/utils/constants.dart';
 
 part 'app_user_state.dart';
