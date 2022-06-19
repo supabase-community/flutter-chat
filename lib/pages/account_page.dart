@@ -30,7 +30,7 @@ class AccountPage extends StatelessWidget {
           } else if (state is AppUserLoaded) {
             return _ProfileEditingWidget(
               isRegistering: isRegistering,
-              initialUserName: state.self.name,
+              initialUserName: state.self.username,
             );
           } else if (state is AppUserNoProfile) {
             return _ProfileEditingWidget(

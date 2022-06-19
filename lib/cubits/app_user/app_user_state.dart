@@ -11,8 +11,8 @@ class AppUserLoaded extends AppUserState {
     required this.self,
   });
 
-  final Map<String, AppUser?> appUsers;
-  final AppUser self;
+  final Map<String, Profile?> appUsers;
+  final Profile self;
 }
 
 /// State where the logged in user has not been registered yet.

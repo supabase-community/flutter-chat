@@ -13,11 +13,11 @@ class AppUserCubit extends Cubit<AppUserState> {
   String? _selfUserId;
 
   /// AppUser object of the logged in user
-  AppUser? _self;
+  Profile? _self;
 
   /// Map of app users cache in memory with user_id as the key
-  final Map<String, AppUser?> _appUsers = {};
-  final Map<String, StreamSubscription<AppUser?>> _appUserSubscriptions = {};
+  final Map<String, Profile?> _appUsers = {};
+  final Map<String, StreamSubscription<Profile?>> _appUserSubscriptions = {};
 
   void getProfile(String userId, {bool isSelf = false}) {
     if (_appUserSubscriptions[userId] != null) {
@@ -31,7 +31,7 @@ class AppUserCubit extends Cubit<AppUserState> {
         .from('users:id=eq.$userId')
         .stream(['id'])
         .execute()
-        .map((data) => data.isEmpty ? null : AppUser.fromMap(data.first))
+        .map((data) => data.isEmpty ? null : Profile.fromMap(data.first))
         .listen((appUser) {
           _appUsers[userId] = appUser;
           if (isSelf) {

@@ -9,7 +9,7 @@ With [WALRUS](https://github.com/supabase/walrus), Supabase now can have row lev
 ```sql
 -- *** Table definitions ***
 
-create table if not exists public.users (
+create table if not exists public.profiles (
     id uuid references auth.users on delete cascade not null primary key,
     username varchar(18) not null unique,
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
@@ -26,16 +26,16 @@ create table if not exists public.rooms (
 comment on table public.rooms is 'Holds chat rooms';
 
 create table if not exists public.user_room (
-    user_id uuid references public.users on delete cascade not null,
-    room_id uuid references public.rooms on delete cascade not null,
+    user_id uuid references public.profiles(id) on delete cascade not null,
+    room_id uuid references public.rooms(id) on delete cascade not null,
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
-    PRIMARY KEY (user_id, room_id)
+    PRIMARY KEY (profile_id, room_id)
 );
 comment on table public.user_room is 'Relational table of users and rooms.';
 
 create table if not exists public.messages (
     id uuid not null primary key DEFAULT uuid_generate_v4(),
-    user_id uuid references public.users on delete cascade not null,
+    profile_id uuid references public.profiles(id) on delete cascade not null,
     room_id uuid references public.rooms on delete cascade not null,
     content text not null,
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null
@@ -51,7 +51,7 @@ returns boolean as $$
   select exists(
     select 1
     from room_participants
-    where room_id = is_room_participant.room_id and user_id = auth.uid()
+    where room_id = is_room_participant.room_id and profile_id = auth.uid()
   );
 $$ language sql security definer;
 
@@ -59,7 +59,7 @@ $$ language sql security definer;
 -- *** Row level security polities ***
 
 
-alter table public.users enable row level security;
+alter table public.profiles enable row level security;
 create policy "Public profiles are viewable by everyone." on public.users for select using (true);
 
 
@@ -75,10 +75,8 @@ alter table public.messages enable row level security;
 create policy "Users can view messages on rooms they are in." on public.messages for select using (is_room_participant(room_id));
 create policy "Users can insert messages on rooms they are in." on public.messages for insert with check (is_room_participant(room_id));
 
--- *** Add tables to the publication ***
+-- *** Add tables to the publication to enable realtime ***
 
-alter publication supabase_realtime add table public.users;
-alter publication supabase_realtime add table public.rooms;
 alter publication supabase_realtime add table public.user_room;
 alter publication supabase_realtime add table public.messages;
 
@@ -89,7 +87,7 @@ alter publication supabase_realtime add table public.messages;
 -- Used to determine if there is a room with given pair of users in create_new_room()
 create or replace view room_participants
 as
-    select rooms.id as room_id, array_agg(user_room.user_id) as users
+    select rooms.id as room_id, array_agg(user_room.profile_id) as users
     from rooms
     left join user_room on rooms.id = user_room.room_id
     group by rooms.id;

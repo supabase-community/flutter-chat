@@ -63,10 +63,11 @@ class RoomsPage extends StatelessWidget {
                               leading: CircleAvatar(
                                 child: opponent == null
                                     ? preloader
-                                    : Text(opponent.name.substring(0, 2)),
+                                    : Text(opponent.username.substring(0, 2)),
                               ),
-                              title:
-                                  opponent == null ? null : Text(opponent.name),
+                              title: opponent == null
+                                  ? null
+                                  : Text(opponent.username),
                               subtitle: room.lastMessage != null
                                   ? Text(
                                       room.lastMessage!.content,
@@ -117,7 +118,7 @@ class _NewUsers extends StatelessWidget {
     required this.newUsers,
   }) : super(key: key);
 
-  final List<AppUser> newUsers;
+  final List<Profile> newUsers;
 
   @override
   Widget build(BuildContext context) {
@@ -144,11 +145,11 @@ class _NewUsers extends StatelessWidget {
                       child: Column(
                         children: [
                           CircleAvatar(
-                            child: Text(user.name.substring(0, 2)),
+                            child: Text(user.username.substring(0, 2)),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            user.name,
+                            user.username,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

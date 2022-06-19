@@ -23,7 +23,7 @@ class RoomCubit extends Cubit<RoomState> {
   late final String _userId;
 
   /// List of new users of the app for the user to start talking to
-  late final List<AppUser> _newUsers;
+  late final List<Profile> _newUsers;
 
   /// List of rooms
   List<Room> _rooms = [];
@@ -53,7 +53,7 @@ class RoomCubit extends Cubit<RoomState> {
       emit(RoomsError('Error loading new users'));
     }
     final data = List<Map<String, dynamic>>.from(res.data as List);
-    _newUsers = data.map(AppUser.fromMap).toList();
+    _newUsers = data.map(Profile.fromMap).toList();
 
     /// Get realtime updates on rooms that the user is in
     _roomsSubscription = supabase
