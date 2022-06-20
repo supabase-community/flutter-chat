@@ -11,13 +11,13 @@ With [WALRUS](https://github.com/supabase/walrus), Supabase now can have row lev
 
 create table if not exists public.profiles (
     id uuid references auth.users on delete cascade not null primary key,
-    username varchar(18) not null unique,
+    username varchar(24) not null unique,
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
 
     -- username should be 3 to 24 characters long containing alphabets, numbers and underscores
     constraint username_validation check (username ~* '^[A-Za-z0-9_]{3,24}$')
 );
-comment on table public.users is 'Holds all of users profile information';
+comment on table public.profiles is 'Holds all of users profile information';
 
 create table if not exists public.rooms (
     id uuid not null primary key default uuid_generate_v4(),
@@ -25,13 +25,13 @@ create table if not exists public.rooms (
 );
 comment on table public.rooms is 'Holds chat rooms';
 
-create table if not exists public.user_room (
-    user_id uuid references public.profiles(id) on delete cascade not null,
+create table if not exists public.room_participants (
+    profile_id uuid references public.profiles(id) on delete cascade not null,
     room_id uuid references public.rooms(id) on delete cascade not null,
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null,
-    PRIMARY KEY (profile_id, room_id)
+    primary key (profile_id, room_id)
 );
-comment on table public.user_room is 'Relational table of users and rooms.';
+comment on table public.room_participants is 'Relational table of users and rooms.';
 
 create table if not exists public.messages (
     id uuid not null primary key DEFAULT uuid_generate_v4(),
@@ -60,15 +60,15 @@ $$ language sql security definer;
 
 
 alter table public.profiles enable row level security;
-create policy "Public profiles are viewable by everyone." on public.users for select using (true);
+create policy "Public profiles are viewable by everyone." on public.profiles for select using (true);
 
 
 alter table public.rooms enable row level security;
 create policy "Users can view rooms that they have joined" on public.rooms for select using (is_room_participant(id));
 
 
-alter table public.user_room enable row level security;
-create policy "Participants of the room can add people." on public.user_room for insert with check (is_room_participant(room_id));
+alter table public.room_participants enable row level security;
+create policy "Participants of the room can add people." on public.room_participants for insert with check (is_room_participant(room_id));
 
 
 alter table public.messages enable row level security;
@@ -77,7 +77,7 @@ create policy "Users can insert messages on rooms they are in." on public.messag
 
 -- *** Add tables to the publication to enable realtime ***
 
-alter publication supabase_realtime add table public.user_room;
+alter publication supabase_realtime add table public.room_participants;
 alter publication supabase_realtime add table public.messages;
 
 -- *** Views and functions ***
@@ -85,11 +85,11 @@ alter publication supabase_realtime add table public.messages;
 
 -- Returns list of rooms as well as the participants as array of uuid
 -- Used to determine if there is a room with given pair of users in create_new_room()
-create or replace view room_participants
+create or replace view public.rooms_with_participants
 as
-    select rooms.id as room_id, array_agg(user_room.profile_id) as users
+    select rooms.id as room_id, array_agg(room_participants.profile_id) as users
     from rooms
-    left join user_room on rooms.id = user_room.room_id
+    left join room_participants on rooms.id = room_participants.room_id
     group by rooms.id;
 
 -- Creates a new room with the user and another user in it.
@@ -100,7 +100,7 @@ create or replace function create_new_room(opponent_uid uuid) returns uuid as $$
         new_room_id uuid;
     begin
         -- Check if room with both participants already exist
-        select room_id from room_participants
+        select room_id from rooms_with_participants
         into new_room_id
         where opponent_uid=any(users)
         and auth.uid()=any(users);
@@ -112,11 +112,11 @@ create or replace function create_new_room(opponent_uid uuid) returns uuid as $$
             returning id into new_room_id;
 
             -- Insert the caller user into the new room
-            insert into public.user_room (user_id, room_id)
+            insert into public.room_participants (profile_id, room_id)
             values (auth.uid(), new_room_id);
 
             -- Insert the opponent user into the new room
-            insert into public.user_room (user_id, room_id)
+            insert into public.room_participants (profile_id, room_id)
             values (opponent_uid, new_room_id);
         end if;
 

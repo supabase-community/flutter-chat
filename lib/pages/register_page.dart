@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_chat/pages/rooms_page.dart';
 import 'package:supabase_chat/utils/constants.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key, required this.isRegistering}) : super(key: key);
@@ -35,7 +34,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final email = _emailController.text;
     final password = _passwordController.text;
     final username = _usernameController.text;
-    final res = await Supabase.instance.client.auth
+    final res = await supabase.auth
         .signUp(email, password, userMetadata: {'username': username});
     final error = res.error;
     if (error != null) {
