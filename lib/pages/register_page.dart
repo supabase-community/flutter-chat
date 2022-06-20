@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
-import 'package:supabase_chat/pages/splash_page.dart';
+import 'package:supabase_chat/pages/rooms_page.dart';
 import 'package:supabase_chat/utils/constants.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AccountPage extends StatelessWidget {
+class AccountPage extends StatefulWidget {
   const AccountPage({Key? key, required this.isRegistering}) : super(key: key);
 
   static Route<void> route({bool isRegistering = false}) {
@@ -16,107 +15,104 @@ class AccountPage extends StatelessWidget {
   final bool isRegistering;
 
   @override
+  State<AccountPage> createState() => _AccountPageState();
+}
+
+class _AccountPageState extends State<AccountPage> {
+  final bool _isLoading = false;
+
+  final _formKey = GlobalKey<FormState>();
+
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _usernameController = TextEditingController();
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Register'),
       ),
-      body: BlocBuilder<AppUserCubit, AppUserState>(
-        builder: (context, state) {
-          if (state is AppUserInitial) {
-            return preloader;
-          } else if (state is AppUserUpdating) {
-            return preloader;
-          } else if (state is AppUserLoaded) {
-            return _ProfileEditingWidget(
-              isRegistering: isRegistering,
-              initialUserName: state.self.username,
-            );
-          } else if (state is AppUserNoProfile) {
-            return _ProfileEditingWidget(
-              isRegistering: isRegistering,
-            );
-          }
-          throw UnimplementedError();
-        },
-      ),
-    );
-  }
-}
-
-class _ProfileEditingWidget extends StatefulWidget {
-  const _ProfileEditingWidget({
-    Key? key,
-    required this.isRegistering,
-    this.initialUserName = '',
-  }) : super(key: key);
-
-  final bool isRegistering;
-  final String initialUserName;
-
-  @override
-  __ProfileEditingWidgetState createState() => __ProfileEditingWidgetState();
-}
-
-class __ProfileEditingWidgetState extends State<_ProfileEditingWidget> {
-  String userName = '';
-  bool isLoading = false;
-
-  /// Called when user taps `Update` button
-  Future<void> _updateProfile() async {
-    try {
-      setState(() {
-        isLoading = true;
-      });
-      await BlocProvider.of<AppUserCubit>(context)
-          .updateProfile(name: userName);
-      if (widget.isRegistering) {
-        Navigator.of(context)
-            .pushAndRemoveUntil(SplashPage.route(), (route) => false);
-      } else {
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      context.showErrorSnackBar(message: 'Failed to update profile');
-    }
-  }
-
-  Future<void> _signOut() async {
-    final response = await supabase.auth.signOut();
-    final error = response.error;
-    if (error != null) {
-      context.showErrorSnackBar(message: error.message);
-    }
-    Navigator.of(context)
-        .pushAndRemoveUntil(SplashPage.route(), (route) => false);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
-      children: [
-        TextFormField(
-          initialValue: widget.initialUserName,
-          onChanged: (val) {
-            userName = val;
-          },
-          decoration: const InputDecoration(labelText: 'User Name'),
-        ),
-        const SizedBox(height: 18),
-        ElevatedButton(
-          onPressed: isLoading ? null : _updateProfile,
-          child: const Text('Save'),
-        ),
-        const SizedBox(height: 18),
-        TextButton(
-          onPressed: isLoading ? null : _signOut,
-          child: const Text('Sign Out'),
-        ),
-      ],
+      body: _isLoading
+          ? preloader
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: listViewPadding,
+                children: [
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      label: Text('Email'),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.isEmpty) {
+                        return 'Required';
+                      }
+                      return null;
+                    },
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  spacer,
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: const InputDecoration(
+                      label: Text('Password'),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.isEmpty) {
+                        return 'Required';
+                      }
+                      if (val.length < 6) {
+                        return '6 characters minimum';
+                      }
+                      return null;
+                    },
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  spacer,
+                  TextFormField(
+                    controller: _usernameController,
+                    decoration: const InputDecoration(
+                      label: Text('Username'),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.isEmpty) {
+                        return 'Required';
+                      }
+                      final isValid =
+                          RegExp(r'^[A-Za-z0-9_]{3,24}$').hasMatch(val);
+                      if (!isValid) {
+                        return '3-24 long with alphanumeric or underscore';
+                      }
+                      return null;
+                    },
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  spacer,
+                  ElevatedButton(
+                    onPressed: () async {
+                      final isValid = _formKey.currentState!.validate();
+                      if (!isValid) {
+                        return;
+                      }
+                      final email = _emailController.text;
+                      final password = _passwordController.text;
+                      final username = _usernameController.text;
+                      final res = await Supabase.instance.client.auth.signUp(
+                          email, password,
+                          userMetadata: {'username': username});
+                      final error = res.error;
+                      if (error != null) {
+                        context.showErrorSnackBar(message: error.message);
+                      }
+                      Navigator.of(context).push(RoomsPage.route());
+                    },
+                    child: const Text('Register'),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }
