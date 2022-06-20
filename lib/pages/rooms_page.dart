@@ -3,13 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
 import 'package:supabase_chat/cubits/rooms/rooms_cubit.dart';
 import 'package:supabase_chat/models/profile.dart';
-import 'package:supabase_chat/pages/register_page.dart';
 import 'package:supabase_chat/pages/chat_page.dart';
 import 'package:supabase_chat/utils/constants.dart';
 import 'package:supabase_chat/utils/messages_provider.dart';
 import 'package:timeago/timeago.dart';
 
-/// Displays the past chat threads
+/// Displays the list of chat threads
 class RoomsPage extends StatelessWidget {
   const RoomsPage({Key? key}) : super(key: key);
 
@@ -28,13 +27,7 @@ class RoomsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chats'),
-        actions: [
-          IconButton(
-            onPressed: () => Navigator.of(context).push(AccountPage.route()),
-            icon: const Icon(Icons.person_outline_outlined),
-          ),
-        ],
+        title: const Text('Rooms'),
       ),
       body: BlocBuilder<RoomCubit, RoomState>(
         builder: (context, state) {

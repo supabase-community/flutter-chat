@@ -3,22 +3,22 @@ import 'package:supabase_chat/pages/rooms_page.dart';
 import 'package:supabase_chat/utils/constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AccountPage extends StatefulWidget {
-  const AccountPage({Key? key, required this.isRegistering}) : super(key: key);
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({Key? key, required this.isRegistering}) : super(key: key);
 
   static Route<void> route({bool isRegistering = false}) {
     return MaterialPageRoute(
-      builder: (context) => AccountPage(isRegistering: isRegistering),
+      builder: (context) => RegisterPage(isRegistering: isRegistering),
     );
   }
 
   final bool isRegistering;
 
   @override
-  State<AccountPage> createState() => _AccountPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _AccountPageState extends State<AccountPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final bool _isLoading = false;
 
   final _formKey = GlobalKey<FormState>();
@@ -26,6 +26,23 @@ class _AccountPageState extends State<AccountPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _usernameController = TextEditingController();
+
+  Future<void> _signUp() async {
+    final isValid = _formKey.currentState!.validate();
+    if (!isValid) {
+      return;
+    }
+    final email = _emailController.text;
+    final password = _passwordController.text;
+    final username = _usernameController.text;
+    final res = await Supabase.instance.client.auth
+        .signUp(email, password, userMetadata: {'username': username});
+    final error = res.error;
+    if (error != null) {
+      context.showErrorSnackBar(message: error.message);
+    }
+    Navigator.of(context).push(RoomsPage.route());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,23 +108,7 @@ class _AccountPageState extends State<AccountPage> {
                   ),
                   spacer,
                   ElevatedButton(
-                    onPressed: () async {
-                      final isValid = _formKey.currentState!.validate();
-                      if (!isValid) {
-                        return;
-                      }
-                      final email = _emailController.text;
-                      final password = _passwordController.text;
-                      final username = _usernameController.text;
-                      final res = await Supabase.instance.client.auth.signUp(
-                          email, password,
-                          userMetadata: {'username': username});
-                      final error = res.error;
-                      if (error != null) {
-                        context.showErrorSnackBar(message: error.message);
-                      }
-                      Navigator.of(context).push(RoomsPage.route());
-                    },
+                    onPressed: _signUp,
                     child: const Text('Register'),
                   ),
                 ],

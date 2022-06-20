@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_chat/utils/constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
 import 'package:supabase_chat/pages/splash_page.dart';
@@ -25,20 +26,7 @@ class MyApp extends StatelessWidget {
       create: (context) => AppUserCubit(),
       child: MaterialApp(
         title: 'SupaChat',
-        theme: ThemeData.dark().copyWith(
-          primaryColor: Colors.green,
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(
-              primary: Colors.green,
-            ),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              onPrimary: Colors.white,
-              primary: Colors.green,
-            ),
-          ),
-        ),
+        theme: appTheme,
         home: const SplashPage(),
       ),
     );
