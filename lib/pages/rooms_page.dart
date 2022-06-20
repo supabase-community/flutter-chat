@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_chat/cubits/profiles/profiles_cubit.dart';
+
 import 'package:supabase_chat/cubits/rooms/rooms_cubit.dart';
 import 'package:supabase_chat/models/profile.dart';
 import 'package:supabase_chat/pages/chat_page.dart';
@@ -36,9 +37,9 @@ class RoomsPage extends StatelessWidget {
           } else if (state is RoomsLoaded) {
             final newUsers = state.newUsers;
             final rooms = state.rooms;
-            return BlocBuilder<AppUserCubit, AppUserState>(
+            return BlocBuilder<ProfilesCubit, AppUserState>(
               builder: (context, state) {
-                if (state is AppUserLoaded) {
+                if (state is ProfilesLoaded) {
                   final appUsers = state.appUsers;
                   return Column(
                     children: [

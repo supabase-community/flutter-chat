@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_chat/cubits/profiles/profiles_cubit.dart';
 import 'package:supabase_chat/models/profile.dart';
 import 'package:supabase_chat/models/message.dart';
 import 'package:supabase_chat/models/room.dart';
@@ -95,7 +95,7 @@ class RoomCubit extends Cubit<RoomState> {
           _rooms[index] =
               _rooms[index].copyWith(opponentUserId: opponentUserId);
           for (final userId in participantUserIds) {
-            BlocProvider.of<AppUserCubit>(context).getProfile(userId);
+            BlocProvider.of<ProfilesCubit>(context).getProfile(userId);
           }
           emit(RoomsLoaded(
             newUsers: _newUsers,

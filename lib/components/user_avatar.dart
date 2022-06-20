@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_chat/cubits/profiles/profiles_cubit.dart';
 import 'package:supabase_chat/utils/constants.dart';
 
 /// Widget that will display a user's avatar
@@ -14,9 +14,9 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AppUserCubit, AppUserState>(
+    return BlocBuilder<ProfilesCubit, AppUserState>(
       builder: (context, state) {
-        if (state is AppUserLoaded) {
+        if (state is ProfilesLoaded) {
           final user = state.appUsers[userId];
           return CircleAvatar(
             child:

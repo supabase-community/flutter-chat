@@ -5,10 +5,10 @@ import 'package:meta/meta.dart';
 import 'package:supabase_chat/models/profile.dart';
 import 'package:supabase_chat/utils/constants.dart';
 
-part 'app_user_state.dart';
+part 'profiles_state.dart';
 
-class AppUserCubit extends Cubit<AppUserState> {
-  AppUserCubit() : super(AppUserInitial());
+class ProfilesCubit extends Cubit<AppUserState> {
+  ProfilesCubit() : super(ProfilesInitial());
 
   String? _selfUserId;
 
@@ -38,9 +38,9 @@ class AppUserCubit extends Cubit<AppUserState> {
             _self = appUser;
           }
           if (_self != null) {
-            emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
+            emit(ProfilesLoaded(appUsers: _appUsers, self: _self!));
           } else {
-            emit(AppUserNoProfile());
+            emit(NoProfile());
           }
         });
   }
@@ -57,9 +57,9 @@ class AppUserCubit extends Cubit<AppUserState> {
       }
     } catch (e) {
       if (_self == null) {
-        emit(AppUserNoProfile());
+        emit(NoProfile());
       } else {
-        emit(AppUserLoaded(appUsers: _appUsers, self: _self!));
+        emit(ProfilesLoaded(appUsers: _appUsers, self: _self!));
       }
       rethrow;
     }
