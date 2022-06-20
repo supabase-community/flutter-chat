@@ -10,58 +10,31 @@ part 'profiles_state.dart';
 class ProfilesCubit extends Cubit<AppUserState> {
   ProfilesCubit() : super(ProfilesInitial());
 
-  String? _selfUserId;
-
-  /// AppUser object of the logged in user
-  Profile? _self;
-
   /// Map of app users cache in memory with user_id as the key
-  final Map<String, Profile?> _appUsers = {};
-  final Map<String, StreamSubscription<Profile?>> _appUserSubscriptions = {};
+  final Map<String, Profile?> _profiles = {};
 
-  void getProfile(String userId, {bool isSelf = false}) {
-    if (_appUserSubscriptions[userId] != null) {
+  Future<void> getProfile(
+    String userId, {
+
+    /// Whether this call is for getting my own profile or not
+    bool isSelf = false,
+  }) async {
+    if (_profiles[userId] != null) {
       return;
     }
-    if (isSelf) {
-      _selfUserId = userId;
-    }
 
-    _appUserSubscriptions[userId] = supabase
-        .from('users:id=eq.$userId')
-        .stream(['id'])
-        .execute()
-        .map((data) => data.isEmpty ? null : Profile.fromMap(data.first))
-        .listen((appUser) {
-          _appUsers[userId] = appUser;
-          if (isSelf) {
-            _self = appUser;
-          }
-          if (_self != null) {
-            emit(ProfilesLoaded(appUsers: _appUsers, self: _self!));
-          } else {
-            emit(NoProfile());
-          }
-        });
-  }
-
-  Future<void> updateProfile({
-    required String name,
-  }) async {
-    try {
-      final updates = {'id': _selfUserId, 'name': name};
-      final res = await supabase.from('users').upsert(updates).execute();
-      final error = res.error;
-      if (error != null) {
-        throw error;
-      }
-    } catch (e) {
-      if (_self == null) {
-        emit(NoProfile());
-      } else {
-        emit(ProfilesLoaded(appUsers: _appUsers, self: _self!));
-      }
-      rethrow;
+    final res = await supabase
+        .from('users')
+        .select()
+        .match({'id': userId})
+        .single()
+        .execute();
+    final data = res.data as Map<String, dynamic>?;
+    if (data == null) {
+      return;
     }
+    _profiles[userId] = Profile.fromMap(data);
+
+    emit(ProfilesLoaded(appUsers: _profiles));
   }
 }
