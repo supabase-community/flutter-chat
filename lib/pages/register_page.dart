@@ -54,7 +54,7 @@ class _RegisterPageState extends State<RegisterPage> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: listViewPadding,
+          padding: formPadding,
           children: [
             TextFormField(
               controller: _emailController,

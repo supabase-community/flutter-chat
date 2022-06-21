@@ -46,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Sign In')),
       body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
+        padding: formPadding,
         children: [
           TextFormField(
             controller: _emailController,
