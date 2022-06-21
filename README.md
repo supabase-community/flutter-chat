@@ -84,14 +84,6 @@ alter publication supabase_realtime add table public.messages;
 -- *** Views and functions ***
 
 
--- Returns list of rooms as well as the participants as array of uuid
--- Used to determine if there is a room with given pair of users in create_new_room()
-create or replace view public.rooms_with_participants
-as
-    select rooms.id as room_id, array_agg(room_participants.profile_id) as users
-    from rooms
-    left join room_participants on rooms.id = room_participants.room_id
-    group by rooms.id;
 
 -- Creates a new room with the user and another user in it.
 -- Will return the room_id of the created room
@@ -101,10 +93,16 @@ create or replace function create_new_room(opponent_uid uuid) returns uuid as $$
         new_room_id uuid;
     begin
         -- Check if room with both participants already exist
-        select room_id from rooms_with_participants
+        with rooms_with_profiles as (
+            select room_id, array_agg(profile_id) as participants
+            from room_participants
+            group by room_id               
+        )
+        select room_id
         into new_room_id
-        where opponent_uid=any(users)
-        and auth.uid()=any(users);
+        from rooms_with_profiles
+        where create_new_room.opponent_uid=any(participants)
+        and auth.uid()=any(participants);
 
 
         if not found then

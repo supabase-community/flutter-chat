@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_chat/pages/login_page.dart';
 import 'package:supabase_chat/pages/rooms_page.dart';
 import 'package:supabase_chat/utils/constants.dart';
 
@@ -110,6 +111,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: _signUp,
                     child: const Text('Register'),
                   ),
+                  spacer,
+                  TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(LoginPage.route());
+                      },
+                      child: const Text('I already have an account'))
                 ],
               ),
             ),

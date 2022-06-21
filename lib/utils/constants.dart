@@ -5,9 +5,9 @@ final supabase = Supabase.instance.client;
 
 const preloader = Center(child: CircularProgressIndicator());
 
-const spacer = SizedBox(width: 8, height: 8);
+const spacer = SizedBox(width: 16, height: 16);
 
-const listViewPadding = EdgeInsets.symmetric(vertical: 12, horizontal: 8);
+const listViewPadding = EdgeInsets.symmetric(vertical: 20, horizontal: 16);
 
 final appTheme = ThemeData.dark().copyWith(
   primaryColor: Colors.green,
@@ -20,6 +20,26 @@ final appTheme = ThemeData.dark().copyWith(
     style: ElevatedButton.styleFrom(
       onPrimary: Colors.white,
       primary: Colors.green,
+    ),
+  ),
+  inputDecorationTheme: InputDecorationTheme(
+    floatingLabelStyle: const TextStyle(
+      color: Colors.green,
+    ),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(
+        color: Colors.grey,
+        width: 2,
+      ),
+    ),
+    focusColor: Colors.green,
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(
+        color: Colors.green,
+        width: 2,
+      ),
     ),
   ),
 );
