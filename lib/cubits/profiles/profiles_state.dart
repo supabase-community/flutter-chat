@@ -7,8 +7,8 @@ class ProfilesInitial extends AppUserState {}
 
 class ProfilesLoaded extends AppUserState {
   ProfilesLoaded({
-    required this.appUsers,
+    required this.profiles,
   });
 
-  final Map<String, Profile?> appUsers;
+  final Map<String, Profile?> profiles;
 }

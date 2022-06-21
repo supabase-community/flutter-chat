@@ -35,6 +35,6 @@ class ProfilesCubit extends Cubit<AppUserState> {
     }
     _profiles[userId] = Profile.fromMap(data);
 
-    emit(ProfilesLoaded(appUsers: _profiles));
+    emit(ProfilesLoaded(profiles: _profiles));
   }
 }

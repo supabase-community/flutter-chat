@@ -40,6 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
     final error = res.error;
     if (error != null) {
       context.showErrorSnackBar(message: error.message);
+      return;
     }
     Navigator.of(context).push(RoomsPage.route());
   }
@@ -50,76 +51,73 @@ class _RegisterPageState extends State<RegisterPage> {
       appBar: AppBar(
         title: const Text('Register'),
       ),
-      body: _isLoading
-          ? preloader
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: listViewPadding,
-                children: [
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      label: Text('Email'),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) {
-                        return 'Required';
-                      }
-                      return null;
-                    },
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  spacer,
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(
-                      label: Text('Password'),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) {
-                        return 'Required';
-                      }
-                      if (val.length < 6) {
-                        return '6 characters minimum';
-                      }
-                      return null;
-                    },
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  spacer,
-                  TextFormField(
-                    controller: _usernameController,
-                    decoration: const InputDecoration(
-                      label: Text('Username'),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) {
-                        return 'Required';
-                      }
-                      final isValid =
-                          RegExp(r'^[A-Za-z0-9_]{3,24}$').hasMatch(val);
-                      if (!isValid) {
-                        return '3-24 long with alphanumeric or underscore';
-                      }
-                      return null;
-                    },
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  spacer,
-                  ElevatedButton(
-                    onPressed: _signUp,
-                    child: const Text('Register'),
-                  ),
-                  spacer,
-                  TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(LoginPage.route());
-                      },
-                      child: const Text('I already have an account'))
-                ],
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: listViewPadding,
+          children: [
+            TextFormField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                label: Text('Email'),
               ),
+              validator: (val) {
+                if (val == null || val.isEmpty) {
+                  return 'Required';
+                }
+                return null;
+              },
+              keyboardType: TextInputType.emailAddress,
             ),
+            spacer,
+            TextFormField(
+              controller: _passwordController,
+              decoration: const InputDecoration(
+                label: Text('Password'),
+              ),
+              validator: (val) {
+                if (val == null || val.isEmpty) {
+                  return 'Required';
+                }
+                if (val.length < 6) {
+                  return '6 characters minimum';
+                }
+                return null;
+              },
+              keyboardType: TextInputType.emailAddress,
+            ),
+            spacer,
+            TextFormField(
+              controller: _usernameController,
+              decoration: const InputDecoration(
+                label: Text('Username'),
+              ),
+              validator: (val) {
+                if (val == null || val.isEmpty) {
+                  return 'Required';
+                }
+                final isValid = RegExp(r'^[A-Za-z0-9_]{3,24}$').hasMatch(val);
+                if (!isValid) {
+                  return '3-24 long with alphanumeric or underscore';
+                }
+                return null;
+              },
+              keyboardType: TextInputType.emailAddress,
+            ),
+            spacer,
+            ElevatedButton(
+              onPressed: _isLoading ? null : _signUp,
+              child: const Text('Register'),
+            ),
+            spacer,
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).push(LoginPage.route());
+                },
+                child: const Text('I already have an account'))
+          ],
+        ),
+      ),
     );
   }
 }

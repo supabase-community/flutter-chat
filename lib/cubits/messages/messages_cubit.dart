@@ -40,7 +40,7 @@ class MessagesCubit extends Cubit<MessagesState> {
   Future<void> sendMessage(String text) async {
     /// Add message to present to the user right away
     final message = Message(
-      id: '',
+      id: 'new',
       roomId: _roomId,
       userId: _userId,
       content: text,
@@ -54,7 +54,7 @@ class MessagesCubit extends Cubit<MessagesState> {
     final error = result.error;
     if (error != null) {
       emit(MessagesError('Error submitting message.'));
-      _messages.removeLast();
+      _messages.removeWhere((message) => message.id == 'new');
       emit(MessagesLoaded(_messages));
     }
   }

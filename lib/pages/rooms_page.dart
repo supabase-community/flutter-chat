@@ -40,7 +40,7 @@ class RoomsPage extends StatelessWidget {
             return BlocBuilder<ProfilesCubit, AppUserState>(
               builder: (context, state) {
                 if (state is ProfilesLoaded) {
-                  final appUsers = state.appUsers;
+                  final appUsers = state.profiles;
                   return Column(
                     children: [
                       _NewUsers(newUsers: newUsers),

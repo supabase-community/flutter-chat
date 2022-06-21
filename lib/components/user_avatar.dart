@@ -17,7 +17,7 @@ class UserAvatar extends StatelessWidget {
     return BlocBuilder<ProfilesCubit, AppUserState>(
       builder: (context, state) {
         if (state is ProfilesLoaded) {
-          final user = state.appUsers[userId];
+          final user = state.profiles[userId];
           return CircleAvatar(
             child:
                 user == null ? preloader : Text(user.username.substring(0, 2)),
