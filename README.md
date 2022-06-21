@@ -34,10 +34,10 @@ create table if not exists public.room_participants (
 comment on table public.room_participants is 'Relational table of users and rooms.';
 
 create table if not exists public.messages (
-    id uuid not null primary key DEFAULT uuid_generate_v4(),
-    profile_id uuid references public.profiles(id) on delete cascade not null,
+    id uuid not null primary key default uuid_generate_v4(),
+    profile_id uuid default auth.uid() references public.profiles(id) on delete cascade not null,
     room_id uuid references public.rooms on delete cascade not null,
-    content text not null,
+    content varchar(500) not null,
     created_at timestamp with time zone default timezone('utc' :: text, now()) not null
 );
 comment on table public.messages is 'Holds individual messages within a chat room.';
@@ -68,15 +68,16 @@ create policy "Users can view rooms that they have joined" on public.rooms for s
 
 
 alter table public.room_participants enable row level security;
-create policy "Participants of the room can add people." on public.room_participants for insert with check (is_room_participant(room_id));
+create policy "Participants of the room can view other participants." on public.room_participants for select using (is_room_participant(room_id));
 
 
 alter table public.messages enable row level security;
 create policy "Users can view messages on rooms they are in." on public.messages for select using (is_room_participant(room_id));
-create policy "Users can insert messages on rooms they are in." on public.messages for insert with check (is_room_participant(room_id));
+create policy "Users can insert messages on rooms they are in." on public.messages for insert with check (is_room_participant(room_id) and profile_id = auth.uid());
 
 -- *** Add tables to the publication to enable realtime ***
 
+alter publication supabase_realtime add table public.rooms;
 alter publication supabase_realtime add table public.room_participants;
 alter publication supabase_realtime add table public.messages;
 
@@ -108,7 +109,7 @@ create or replace function create_new_room(opponent_uid uuid) returns uuid as $$
 
         if not found then
             -- Create a new room
-            insert into public.rooms () values()
+            insert into public.rooms default values
             returning id into new_room_id;
 
             -- Insert the caller user into the new room
@@ -128,7 +129,7 @@ $$ language plpgsql security definer;
 -- Also copies the username value from metadata
 create or replace function handle_new_user() returns trigger as $$
     begin
-        insert int public.profiles(id, username)
+        insert into public.profiles(id, username)
         values(new.id, new.raw_user_meta_data->>'username');
 
         return new;
