@@ -29,14 +29,6 @@ class RoomsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Rooms'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              supabase.auth.signOut();
-            },
-          ),
-        ],
       ),
       body: BlocBuilder<RoomCubit, RoomState>(
         builder: (context, state) {
@@ -77,10 +69,9 @@ class RoomsPage extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                     )
                                   : const Text('Room created'),
-                              trailing: room.lastMessage?.createdAt != null
-                                  ? Text(format(room.lastMessage!.createdAt,
-                                      locale: 'en_short'))
-                                  : null,
+                              trailing: Text(format(
+                                  room.lastMessage?.createdAt ?? room.createdAt,
+                                  locale: 'en_short')),
                             );
                           },
                         ),

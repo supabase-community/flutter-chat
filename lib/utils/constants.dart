@@ -5,7 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final supabase = Supabase.instance.client;
 
 /// Simple preloader inside a Center widget
-const preloader = Center(child: CircularProgressIndicator(color: Colors.green));
+const preloader =
+    Center(child: CircularProgressIndicator(color: Colors.orange));
 
 /// Simple sized box to space out form elements
 const spacer = SizedBox(width: 16, height: 16);
@@ -14,11 +15,21 @@ const spacer = SizedBox(width: 16, height: 16);
 const formPadding = EdgeInsets.symmetric(vertical: 20, horizontal: 16);
 
 /// Basic theme to change the look and feel of the app
-final appTheme = ThemeData.dark().copyWith(
-  primaryColor: Colors.green,
+final appTheme = ThemeData.light().copyWith(
+  primaryColorDark: Colors.orange,
+  appBarTheme: const AppBarTheme(
+    elevation: 1,
+    backgroundColor: Colors.white,
+    iconTheme: IconThemeData(color: Colors.black),
+    titleTextStyle: TextStyle(
+      color: Colors.black,
+      fontSize: 18,
+    ),
+  ),
+  primaryColor: Colors.orange,
   textButtonTheme: TextButtonThemeData(
     style: TextButton.styleFrom(
-      primary: Colors.green,
+      primary: Colors.orange,
     ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
@@ -29,7 +40,7 @@ final appTheme = ThemeData.dark().copyWith(
   ),
   inputDecorationTheme: InputDecorationTheme(
     floatingLabelStyle: const TextStyle(
-      color: Colors.green,
+      color: Colors.orange,
     ),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
@@ -38,11 +49,11 @@ final appTheme = ThemeData.dark().copyWith(
         width: 2,
       ),
     ),
-    focusColor: Colors.green,
+    focusColor: Colors.orange,
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: const BorderSide(
-        color: Colors.green,
+        color: Colors.orange,
         width: 2,
       ),
     ),
