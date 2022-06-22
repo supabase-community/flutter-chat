@@ -53,6 +53,7 @@ class _LoginPageState extends State<LoginPage> {
             decoration: const InputDecoration(labelText: 'Email'),
             keyboardType: TextInputType.emailAddress,
           ),
+          spacer,
           TextFormField(
             controller: _passwordController,
             decoration: const InputDecoration(labelText: 'Password'),

@@ -1,11 +1,11 @@
 part of 'profiles_cubit.dart';
 
 @immutable
-abstract class AppUserState {}
+abstract class ProfilesState {}
 
-class ProfilesInitial extends AppUserState {}
+class ProfilesInitial extends ProfilesState {}
 
-class ProfilesLoaded extends AppUserState {
+class ProfilesLoaded extends ProfilesState {
   ProfilesLoaded({
     required this.profiles,
   });

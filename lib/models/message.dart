@@ -2,14 +2,14 @@ class Message {
   Message({
     required this.id,
     required this.roomId,
-    required this.userId,
+    required this.profileId,
     required this.content,
     required this.createdAt,
     required this.isMine,
   });
 
   final String id;
-  final String userId;
+  final String profileId;
   final String roomId;
   final String content;
   final DateTime createdAt;
@@ -19,7 +19,7 @@ class Message {
 
   Map<String, dynamic> toMap() {
     return {
-      'user_id': userId,
+      'profile_id': profileId,
       'room_id': roomId,
       'content': content,
     };
@@ -32,10 +32,10 @@ class Message {
     return Message(
       id: map['id'],
       roomId: map['room_id'],
-      userId: map['user_id'],
+      profileId: map['profile_id'],
       content: map['content'],
       createdAt: DateTime.parse(map['created_at']),
-      isMine: myUserId == map['user_id'],
+      isMine: myUserId == map['profile_id'],
     );
   }
 
@@ -49,7 +49,7 @@ class Message {
   }) {
     return Message(
       id: id ?? this.id,
-      userId: userId ?? this.userId,
+      profileId: userId ?? profileId,
       roomId: roomId ?? this.roomId,
       content: text ?? content,
       createdAt: createdAt ?? this.createdAt,

@@ -1,18 +1,16 @@
-import 'dart:convert';
-
 import 'package:supabase_chat/models/message.dart';
 
 class Room {
   Room({
     required this.id,
     required this.createdAt,
-    this.opponentUserId,
+    required this.opponentUserId,
     this.lastMessage,
   });
 
   final String id;
   final DateTime createdAt;
-  final String? opponentUserId;
+  final String opponentUserId;
   final Message? lastMessage;
 
   Map<String, dynamic> toMap() {
@@ -22,16 +20,14 @@ class Room {
     };
   }
 
-  static Room fromMap(Map<String, dynamic> map) {
+  /// Creates a room object from room_participants table
+  static Room fromRoomParticipants(Map<String, dynamic> map) {
     return Room(
-      id: map['id'],
+      id: map['room_id'],
+      opponentUserId: map['profile_id'],
       createdAt: DateTime.parse(map['created_at']),
     );
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory Room.fromJson(String source) => Room.fromMap(json.decode(source));
 
   Room copyWith({
     String? id,

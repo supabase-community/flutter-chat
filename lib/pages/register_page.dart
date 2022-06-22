@@ -72,6 +72,7 @@ class _RegisterPageState extends State<RegisterPage> {
             spacer,
             TextFormField(
               controller: _passwordController,
+              obscureText: true,
               decoration: const InputDecoration(
                 label: Text('Password'),
               ),
@@ -84,7 +85,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 }
                 return null;
               },
-              keyboardType: TextInputType.emailAddress,
             ),
             spacer,
             TextFormField(
@@ -102,7 +102,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 }
                 return null;
               },
-              keyboardType: TextInputType.emailAddress,
             ),
             spacer,
             ElevatedButton(

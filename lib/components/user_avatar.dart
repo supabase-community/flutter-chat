@@ -14,7 +14,7 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProfilesCubit, AppUserState>(
+    return BlocBuilder<ProfilesCubit, ProfilesState>(
       builder: (context, state) {
         if (state is ProfilesLoaded) {
           final user = state.profiles[userId];

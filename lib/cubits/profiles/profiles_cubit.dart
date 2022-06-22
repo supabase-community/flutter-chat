@@ -7,29 +7,25 @@ import 'package:supabase_chat/utils/constants.dart';
 
 part 'profiles_state.dart';
 
-class ProfilesCubit extends Cubit<AppUserState> {
+class ProfilesCubit extends Cubit<ProfilesState> {
   ProfilesCubit() : super(ProfilesInitial());
 
-  /// Map of app users cache in memory with user_id as the key
+  /// Map of app users cache in memory with profile_id as the key
   final Map<String, Profile?> _profiles = {};
 
-  Future<void> getProfile(
-    String userId, {
-
-    /// Whether this call is for getting my own profile or not
-    bool isSelf = false,
-  }) async {
+  Future<void> getProfile(String userId) async {
     if (_profiles[userId] != null) {
       return;
     }
 
     final res = await supabase
-        .from('users')
+        .from('profiles')
         .select()
         .match({'id': userId})
         .single()
         .execute();
     final data = res.data as Map<String, dynamic>?;
+
     if (data == null) {
       return;
     }

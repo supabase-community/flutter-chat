@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final supabase = Supabase.instance.client;
 
 /// Simple preloader inside a Center widget
-const preloader = Center(child: CircularProgressIndicator());
+const preloader = Center(child: CircularProgressIndicator(color: Colors.green));
 
 /// Simple sized box to space out form elements
 const spacer = SizedBox(width: 16, height: 16);

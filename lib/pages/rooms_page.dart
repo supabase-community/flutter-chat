@@ -29,6 +29,14 @@ class RoomsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Rooms'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () {
+              supabase.auth.signOut();
+            },
+          ),
+        ],
       ),
       body: BlocBuilder<RoomCubit, RoomState>(
         builder: (context, state) {
@@ -37,10 +45,10 @@ class RoomsPage extends StatelessWidget {
           } else if (state is RoomsLoaded) {
             final newUsers = state.newUsers;
             final rooms = state.rooms;
-            return BlocBuilder<ProfilesCubit, AppUserState>(
+            return BlocBuilder<ProfilesCubit, ProfilesState>(
               builder: (context, state) {
                 if (state is ProfilesLoaded) {
-                  final appUsers = state.profiles;
+                  final profiles = state.profiles;
                   return Column(
                     children: [
                       _NewUsers(newUsers: newUsers),
@@ -49,7 +57,7 @@ class RoomsPage extends StatelessWidget {
                           itemCount: rooms.length,
                           itemBuilder: (context, index) {
                             final room = rooms[index];
-                            final opponent = appUsers[room.opponentUserId];
+                            final opponent = profiles[room.opponentUserId];
 
                             return ListTile(
                               onTap: () => Navigator.of(context)
