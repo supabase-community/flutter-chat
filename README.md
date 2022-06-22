@@ -77,7 +77,6 @@ create policy "Users can insert messages on rooms they are in." on public.messag
 
 -- *** Add tables to the publication to enable realtime ***
 
-alter publication supabase_realtime add table public.rooms;
 alter publication supabase_realtime add table public.room_participants;
 alter publication supabase_realtime add table public.messages;
 
