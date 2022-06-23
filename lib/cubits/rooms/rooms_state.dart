@@ -6,7 +6,7 @@ abstract class RoomState {}
 class RoomsLoading extends RoomState {}
 
 class RoomsLoaded extends RoomState {
-  final List<AppUser> newUsers;
+  final List<Profile> newUsers;
   final List<Room> rooms;
 
   RoomsLoaded({
@@ -16,7 +16,7 @@ class RoomsLoaded extends RoomState {
 }
 
 class RoomsEmpty extends RoomState {
-  final List<AppUser> newUsers;
+  final List<Profile> newUsers;
 
   RoomsEmpty({required this.newUsers});
 }

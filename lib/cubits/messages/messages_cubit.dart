@@ -19,12 +19,12 @@ class MessagesCubit extends Cubit<MessagesState> {
   List<Message> _messages = [];
 
   late final String _roomId;
-  late final String _userId;
+  late final String _myUserId;
 
   void setMessagesListener(String roomId) {
     _roomId = roomId;
 
-    _userId = supabase.auth.user()!.id;
+    _myUserId = supabase.auth.user()!.id;
 
     _messagesSubscription =
         _messagesProvider.subscribe(roomId).listen((messages) {
@@ -40,10 +40,10 @@ class MessagesCubit extends Cubit<MessagesState> {
   Future<void> sendMessage(String text) async {
     /// Add message to present to the user right away
     final message = Message(
-      id: '',
+      id: 'new',
       roomId: _roomId,
-      userId: _userId,
-      text: text,
+      profileId: _myUserId,
+      content: text,
       createdAt: DateTime.now(),
       isMine: true,
     );
@@ -54,7 +54,7 @@ class MessagesCubit extends Cubit<MessagesState> {
     final error = result.error;
     if (error != null) {
       emit(MessagesError('Error submitting message.'));
-      _messages.removeLast();
+      _messages.removeWhere((message) => message.id == 'new');
       emit(MessagesLoaded(_messages));
     }
   }

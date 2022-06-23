@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
+import 'package:supabase_chat/cubits/profiles/profiles_cubit.dart';
+
 import 'package:supabase_chat/cubits/rooms/rooms_cubit.dart';
-import 'package:supabase_chat/models/app_user.dart';
-import 'package:supabase_chat/pages/account_page.dart';
+import 'package:supabase_chat/models/profile.dart';
 import 'package:supabase_chat/pages/chat_page.dart';
 import 'package:supabase_chat/utils/constants.dart';
 import 'package:supabase_chat/utils/messages_provider.dart';
 import 'package:timeago/timeago.dart';
 
-/// Displays the past chat threads
+/// Displays the list of chat threads
 class RoomsPage extends StatelessWidget {
   const RoomsPage({Key? key}) : super(key: key);
 
@@ -28,13 +28,7 @@ class RoomsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chats'),
-        actions: [
-          IconButton(
-            onPressed: () => Navigator.of(context).push(AccountPage.route()),
-            icon: const Icon(Icons.person_outline_outlined),
-          ),
-        ],
+        title: const Text('Rooms'),
       ),
       body: BlocBuilder<RoomCubit, RoomState>(
         builder: (context, state) {
@@ -43,10 +37,10 @@ class RoomsPage extends StatelessWidget {
           } else if (state is RoomsLoaded) {
             final newUsers = state.newUsers;
             final rooms = state.rooms;
-            return BlocBuilder<AppUserCubit, AppUserState>(
+            return BlocBuilder<ProfilesCubit, ProfilesState>(
               builder: (context, state) {
-                if (state is AppUserLoaded) {
-                  final appUsers = state.appUsers;
+                if (state is ProfilesLoaded) {
+                  final profiles = state.profiles;
                   return Column(
                     children: [
                       _NewUsers(newUsers: newUsers),
@@ -55,7 +49,7 @@ class RoomsPage extends StatelessWidget {
                           itemCount: rooms.length,
                           itemBuilder: (context, index) {
                             final room = rooms[index];
-                            final opponent = appUsers[room.opponentUserId];
+                            final opponent = profiles[room.opponentUserId];
 
                             return ListTile(
                               onTap: () => Navigator.of(context)
@@ -63,21 +57,21 @@ class RoomsPage extends StatelessWidget {
                               leading: CircleAvatar(
                                 child: opponent == null
                                     ? preloader
-                                    : Text(opponent.name.substring(0, 2)),
+                                    : Text(opponent.username.substring(0, 2)),
                               ),
-                              title:
-                                  opponent == null ? null : Text(opponent.name),
+                              title: Text(opponent == null
+                                  ? 'Loading...'
+                                  : opponent.username),
                               subtitle: room.lastMessage != null
                                   ? Text(
-                                      room.lastMessage!.text,
+                                      room.lastMessage!.content,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     )
                                   : const Text('Room created'),
-                              trailing: room.lastMessage?.createdAt != null
-                                  ? Text(format(room.lastMessage!.createdAt,
-                                      locale: 'en_short'))
-                                  : null,
+                              trailing: Text(format(
+                                  room.lastMessage?.createdAt ?? room.createdAt,
+                                  locale: 'en_short')),
                             );
                           },
                         ),
@@ -117,7 +111,7 @@ class _NewUsers extends StatelessWidget {
     required this.newUsers,
   }) : super(key: key);
 
-  final List<AppUser> newUsers;
+  final List<Profile> newUsers;
 
   @override
   Widget build(BuildContext context) {
@@ -144,11 +138,11 @@ class _NewUsers extends StatelessWidget {
                       child: Column(
                         children: [
                           CircleAvatar(
-                            child: Text(user.name.substring(0, 2)),
+                            child: Text(user.username.substring(0, 2)),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            user.name,
+                            user.username,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

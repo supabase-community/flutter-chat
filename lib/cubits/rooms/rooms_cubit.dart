@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_chat/cubits/app_user/app_user_cubit.dart';
-import 'package:supabase_chat/models/app_user.dart';
+import 'package:supabase_chat/cubits/profiles/profiles_cubit.dart';
+import 'package:supabase_chat/models/profile.dart';
 import 'package:supabase_chat/models/message.dart';
 import 'package:supabase_chat/models/room.dart';
 import 'package:supabase_chat/utils/constants.dart';
@@ -20,18 +20,15 @@ class RoomCubit extends Cubit<RoomState> {
 
   final Map<String, StreamSubscription<Message?>> _messageSubscriptions = {};
 
-  late final String _userId;
+  late final String _myUserId;
 
   /// List of new users of the app for the user to start talking to
-  late final List<AppUser> _newUsers;
+  late final List<Profile> _newUsers;
 
   /// List of rooms
   List<Room> _rooms = [];
-  StreamSubscription<List<Room>>? _roomsSubscription;
+  StreamSubscription<List<Map<String, dynamic>>>? _rawRoomsSubscription;
   bool _haveCalledGetRooms = false;
-
-  final Map<String, StreamSubscription<List<String>>>
-      _participantsSubscription = {};
 
   Future<void> getRooms(BuildContext context) async {
     if (_haveCalledGetRooms) {
@@ -39,63 +36,41 @@ class RoomCubit extends Cubit<RoomState> {
     }
     _haveCalledGetRooms = true;
 
-    _userId = supabase.auth.user()!.id;
+    _myUserId = supabase.auth.user()!.id;
 
     final res = await supabase
-        .from('users')
+        .from('profiles')
         .select()
-        .not('id', 'eq', _userId)
+        .not('id', 'eq', _myUserId)
         .order('created_at')
         .limit(12)
         .execute();
     final error = res.error;
     if (error != null) {
       emit(RoomsError('Error loading new users'));
-    }
-    final data = List<Map<String, dynamic>>.from(res.data as List);
-    _newUsers = data.map(AppUser.fromMap).toList();
-
-    /// Get realtime updates on rooms that the user is in
-    _roomsSubscription = supabase
-        .from('rooms')
-        .stream(['id'])
-        .execute()
-        .map((data) => data.map(Room.fromMap).toList())
-        .listen((rooms) {
-          for (final room in rooms) {
-            _getParticipants(context: context, roomId: room.id);
-            _getNewestMessage(context: context, roomId: room.id);
-          }
-          _rooms = rooms;
-          if (_rooms.isEmpty) {
-            emit(RoomsEmpty(newUsers: _newUsers));
-          } else {
-            emit(RoomsLoaded(newUsers: _newUsers, rooms: _rooms));
-          }
-        });
-  }
-
-  /// Loads the participants in each room and their profile
-  void _getParticipants({
-    required BuildContext context,
-    required String roomId,
-  }) {
-    if (_participantsSubscription[roomId] != null) {
       return;
     }
-    _participantsSubscription[roomId] = supabase
-        .from('user_room:room_id=eq.$roomId')
-        .stream(['id'])
+    final data = List<Map<String, dynamic>>.from(res.data as List);
+    _newUsers = data.map(Profile.fromMap).toList();
+
+    /// Get realtime updates on rooms that the user is in
+    _rawRoomsSubscription = supabase
+        .from('room_participants')
+        .stream(['room_id', 'profile_id'])
         .execute()
-        .map((data) => data.map((row) => row['user_id'] as String).toList())
-        .listen((participantUserIds) {
-          final index = _rooms.indexWhere((room) => room.id == roomId);
-          final opponentUserId =
-              participantUserIds.singleWhere((element) => element != _userId);
-          _rooms[index] =
-              _rooms[index].copyWith(opponentUserId: opponentUserId);
-          for (final userId in participantUserIds) {
-            BlocProvider.of<AppUserCubit>(context).getProfile(userId);
+        .listen((participantMaps) async {
+          if (participantMaps.isEmpty) {
+            emit(RoomsEmpty(newUsers: _newUsers));
+          }
+
+          _rooms = participantMaps
+              .map(Room.fromRoomParticipants)
+              .where((room) => room.opponentUserId != _myUserId)
+              .toList();
+          for (final room in _rooms) {
+            _getNewestMessage(context: context, roomId: room.id);
+            BlocProvider.of<ProfilesCubit>(context)
+                .getProfile(room.opponentUserId);
           }
           emit(RoomsLoaded(
             newUsers: _newUsers,
@@ -145,10 +120,7 @@ class RoomCubit extends Cubit<RoomState> {
 
   @override
   Future<void> close() {
-    _roomsSubscription?.cancel();
-    for (final listener in _participantsSubscription.values) {
-      listener.cancel();
-    }
+    _rawRoomsSubscription?.cancel();
     _messagesProvider.clear();
     return super.close();
   }

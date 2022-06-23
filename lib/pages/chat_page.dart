@@ -106,6 +106,7 @@ class _MessageBarState extends State<_MessageBar> {
                 decoration: const InputDecoration(
                   hintText: 'Type a message',
                   border: InputBorder.none,
+                  focusedBorder: InputBorder.none,
                   contentPadding: EdgeInsets.all(8),
                 ),
               ),
@@ -153,7 +154,7 @@ class _ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> chatContents = [
-      if (!message.isMine) UserAvatar(userId: message.userId),
+      if (!message.isMine) UserAvatar(userId: message.profileId),
       const SizedBox(width: 12),
       Flexible(
         child: Container(
@@ -166,7 +167,7 @@ class _ChatBubble extends StatelessWidget {
                 message.isMine ? Colors.black : Theme.of(context).primaryColor,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Text(message.text),
+          child: Text(message.content),
         ),
       ),
       const SizedBox(width: 12),
