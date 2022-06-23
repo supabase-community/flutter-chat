@@ -59,9 +59,9 @@ class RoomsPage extends StatelessWidget {
                                     ? preloader
                                     : Text(opponent.username.substring(0, 2)),
                               ),
-                              title: opponent == null
-                                  ? null
-                                  : Text(opponent.username),
+                              title: Text(opponent == null
+                                  ? 'Loading...'
+                                  : opponent.username),
                               subtitle: room.lastMessage != null
                                   ? Text(
                                       room.lastMessage!.content,

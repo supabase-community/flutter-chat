@@ -30,8 +30,6 @@ class RoomCubit extends Cubit<RoomState> {
   StreamSubscription<List<Map<String, dynamic>>>? _rawRoomsSubscription;
   bool _haveCalledGetRooms = false;
 
-  final Map<String, bool> _participantsSubscription = {};
-
   Future<void> getRooms(BuildContext context) async {
     if (_haveCalledGetRooms) {
       return;
