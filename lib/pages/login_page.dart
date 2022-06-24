@@ -53,13 +53,13 @@ class _LoginPageState extends State<LoginPage> {
             decoration: const InputDecoration(labelText: 'Email'),
             keyboardType: TextInputType.emailAddress,
           ),
-          spacer,
+          formSpacer,
           TextFormField(
             controller: _passwordController,
             decoration: const InputDecoration(labelText: 'Password'),
             obscureText: true,
           ),
-          spacer,
+          formSpacer,
           ElevatedButton(
             onPressed: _isLoading ? null : _signIn,
             child: const Text('Login'),

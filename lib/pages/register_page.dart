@@ -69,7 +69,7 @@ class _RegisterPageState extends State<RegisterPage> {
               },
               keyboardType: TextInputType.emailAddress,
             ),
-            spacer,
+            formSpacer,
             TextFormField(
               controller: _passwordController,
               obscureText: true,
@@ -86,7 +86,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 return null;
               },
             ),
-            spacer,
+            formSpacer,
             TextFormField(
               controller: _usernameController,
               decoration: const InputDecoration(
@@ -103,17 +103,18 @@ class _RegisterPageState extends State<RegisterPage> {
                 return null;
               },
             ),
-            spacer,
+            formSpacer,
             ElevatedButton(
               onPressed: _isLoading ? null : _signUp,
               child: const Text('Register'),
             ),
-            spacer,
+            formSpacer,
             TextButton(
-                onPressed: () {
-                  Navigator.of(context).push(LoginPage.route());
-                },
-                child: const Text('I already have an account'))
+              onPressed: () {
+                Navigator.of(context).push(LoginPage.route());
+              },
+              child: const Text('I already have an account'),
+            )
           ],
         ),
       ),

@@ -9,7 +9,7 @@ const preloader =
     Center(child: CircularProgressIndicator(color: Colors.orange));
 
 /// Simple sized box to space out form elements
-const spacer = SizedBox(width: 16, height: 16);
+const formSpacer = SizedBox(width: 16, height: 16);
 
 /// Some padding for all the forms to use
 const formPadding = EdgeInsets.symmetric(vertical: 20, horizontal: 16);
