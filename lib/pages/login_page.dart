@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_chat_app/pages/rooms_page.dart';
+import 'package:my_chat_app/pages/chat_page.dart';
 import 'package:my_chat_app/utils/constants.dart';
 
 class LoginPage extends StatefulWidget {
@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
       context.showErrorSnackBar(message: error.message);
     }
     Navigator.of(context)
-        .pushAndRemoveUntil(RoomsPage.route(), (route) => false);
+        .pushAndRemoveUntil(ChatPage.route(), (route) => false);
   }
 
   @override

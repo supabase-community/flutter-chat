@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:my_chat_app/pages/chat_page.dart';
 import 'package:my_chat_app/pages/login_page.dart';
-import 'package:my_chat_app/pages/rooms_page.dart';
 import 'package:my_chat_app/utils/constants.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -42,7 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
       context.showErrorSnackBar(message: error.message);
       return;
     }
-    Navigator.of(context).push(RoomsPage.route());
+    Navigator.of(context).push(ChatPage.route());
   }
 
   @override
