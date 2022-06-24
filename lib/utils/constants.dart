@@ -60,6 +60,7 @@ final appTheme = ThemeData.light().copyWith(
   ),
 );
 
+/// Set of extension methods to easily display a snackbar
 extension ShowSnackBar on BuildContext {
   /// Displays a basic snackbar
   void showSnackBar({

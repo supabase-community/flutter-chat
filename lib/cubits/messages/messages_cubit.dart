@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:supabase_chat/models/message.dart';
-import 'package:supabase_chat/utils/constants.dart';
-import 'package:supabase_chat/utils/messages_provider.dart';
+import 'package:my_chat_app/models/message.dart';
+import 'package:my_chat_app/utils/constants.dart';
+import 'package:my_chat_app/utils/messages_provider.dart';
 
 part 'messages_state.dart';
 

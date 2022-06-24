@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_chat/pages/rooms_page.dart';
-import 'package:supabase_chat/utils/constants.dart';
+import 'package:my_chat_app/pages/rooms_page.dart';
+import 'package:my_chat_app/utils/constants.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);

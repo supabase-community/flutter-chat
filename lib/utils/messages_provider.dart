@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:rxdart/subjects.dart';
-import 'package:supabase_chat/models/message.dart';
-import 'package:supabase_chat/utils/constants.dart';
+import 'package:my_chat_app/models/message.dart';
+import 'package:my_chat_app/utils/constants.dart';
 
 class MessagesProvider {
   static final MessagesProvider _singleton = MessagesProvider._();
@@ -15,12 +15,12 @@ class MessagesProvider {
 
   final Map<String, StreamSubscription<List<Message>>> _messageSubscriptions =
       {};
-  final Map<String, List<Message>> _messages = {};
+
   final Map<String, StreamController<List<Message>>> _messageControllers = {};
-  String? _userId;
+  String? _myUserId;
 
   Stream<List<Message>> subscribe(String roomId) {
-    _userId ??= supabase.auth.user()!.id;
+    _myUserId ??= supabase.auth.user()!.id;
 
     _messageControllers[roomId] ??= BehaviorSubject();
 
@@ -34,7 +34,7 @@ class MessagesProvider {
               .map<Message>(
                 (row) => Message.fromMap(
                   map: row,
-                  myUserId: _userId!,
+                  myUserId: _myUserId!,
                 ),
               )
               .toList(),
@@ -53,6 +53,5 @@ class MessagesProvider {
     for (final controller in _messageControllers.values) {
       controller.close();
     }
-    _messages.clear();
   }
 }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_chat/cubits/profiles/profiles_cubit.dart';
+import 'package:my_chat_app/cubits/profiles/profiles_cubit.dart';
 
-import 'package:supabase_chat/cubits/rooms/rooms_cubit.dart';
-import 'package:supabase_chat/models/profile.dart';
-import 'package:supabase_chat/pages/chat_page.dart';
-import 'package:supabase_chat/utils/constants.dart';
-import 'package:supabase_chat/utils/messages_provider.dart';
+import 'package:my_chat_app/cubits/rooms/rooms_cubit.dart';
+import 'package:my_chat_app/models/profile.dart';
+import 'package:my_chat_app/pages/chat_page.dart';
+import 'package:my_chat_app/utils/constants.dart';
+import 'package:my_chat_app/utils/messages_provider.dart';
 import 'package:timeago/timeago.dart';
 
 /// Displays the list of chat threads
@@ -17,8 +17,8 @@ class RoomsPage extends StatelessWidget {
     final messageProvider = MessagesProvider();
     return MaterialPageRoute(
       builder: (context) => BlocProvider<RoomCubit>(
-        create: (context) =>
-            RoomCubit(messagesProvider: messageProvider)..getRooms(context),
+        create: (context) => RoomCubit(messagesProvider: messageProvider)
+          ..initializeRooms(context),
         child: const RoomsPage(),
       ),
     );
@@ -49,19 +49,19 @@ class RoomsPage extends StatelessWidget {
                           itemCount: rooms.length,
                           itemBuilder: (context, index) {
                             final room = rooms[index];
-                            final opponent = profiles[room.opponentUserId];
+                            final otherUser = profiles[room.otherUserId];
 
                             return ListTile(
                               onTap: () => Navigator.of(context)
                                   .push(ChatPage.route(room.id)),
                               leading: CircleAvatar(
-                                child: opponent == null
+                                child: otherUser == null
                                     ? preloader
-                                    : Text(opponent.username.substring(0, 2)),
+                                    : Text(otherUser.username.substring(0, 2)),
                               ),
-                              title: Text(opponent == null
+                              title: Text(otherUser == null
                                   ? 'Loading...'
-                                  : opponent.username),
+                                  : otherUser.username),
                               subtitle: room.lastMessage != null
                                   ? Text(
                                       room.lastMessage!.content,

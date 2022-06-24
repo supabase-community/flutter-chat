@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class Profile {
   Profile({
     required this.id,
@@ -7,8 +5,13 @@ class Profile {
     required this.createdAt,
   });
 
+  /// User ID of the profile
   final String id;
+
+  /// Username of the profile
   final String username;
+
+  /// Date and time when the profile was created
   final DateTime createdAt;
 
   Map<String, dynamic> toMap() {
@@ -19,18 +22,10 @@ class Profile {
     };
   }
 
-  static Profile fromMap(Map<String, dynamic> map) {
-    return Profile(
-      id: map['id'],
-      username: map['username'],
-      createdAt: DateTime.parse(map['created_at']),
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory Profile.fromJson(String source) =>
-      Profile.fromMap(json.decode(source));
+  Profile.fromMap(Map<String, dynamic> map)
+      : id = map['id'],
+        username = map['username'],
+        createdAt = DateTime.parse(map['created_at']);
 
   Profile copyWith({
     String? id,

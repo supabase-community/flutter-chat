@@ -1,4 +1,4 @@
-name: supabase_chat
+name: my_chat_app
 description: Sample chat app using Supabase and Flutter
 
 publish_to: 'none'

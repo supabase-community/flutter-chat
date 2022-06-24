@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_chat/components/user_avatar.dart';
-import 'package:supabase_chat/cubits/messages/messages_cubit.dart';
-import 'package:supabase_chat/models/message.dart';
-import 'package:supabase_chat/utils/constants.dart';
-import 'package:supabase_chat/utils/messages_provider.dart';
+import 'package:my_chat_app/components/user_avatar.dart';
+import 'package:my_chat_app/cubits/messages/messages_cubit.dart';
+import 'package:my_chat_app/models/message.dart';
+import 'package:my_chat_app/utils/constants.dart';
+import 'package:my_chat_app/utils/messages_provider.dart';
 import 'package:timeago/timeago.dart';
 
 /// Page to chat with someone.

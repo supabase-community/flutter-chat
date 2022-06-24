@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_chat/cubits/profiles/profiles_cubit.dart';
-import 'package:supabase_chat/utils/constants.dart';
+import 'package:my_chat_app/cubits/profiles/profiles_cubit.dart';
+import 'package:my_chat_app/utils/constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:supabase_chat/pages/splash_page.dart';
+import 'package:my_chat_app/pages/splash_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

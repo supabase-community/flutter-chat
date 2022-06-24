@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_chat/cubits/profiles/profiles_cubit.dart';
-import 'package:supabase_chat/models/profile.dart';
-import 'package:supabase_chat/models/message.dart';
-import 'package:supabase_chat/models/room.dart';
-import 'package:supabase_chat/utils/constants.dart';
-import 'package:supabase_chat/utils/messages_provider.dart';
+import 'package:my_chat_app/cubits/profiles/profiles_cubit.dart';
+import 'package:my_chat_app/models/profile.dart';
+import 'package:my_chat_app/models/message.dart';
+import 'package:my_chat_app/models/room.dart';
+import 'package:my_chat_app/utils/constants.dart';
+import 'package:my_chat_app/utils/messages_provider.dart';
 
 part 'rooms_state.dart';
 
@@ -30,7 +30,7 @@ class RoomCubit extends Cubit<RoomState> {
   StreamSubscription<List<Map<String, dynamic>>>? _rawRoomsSubscription;
   bool _haveCalledGetRooms = false;
 
-  Future<void> getRooms(BuildContext context) async {
+  Future<void> initializeRooms(BuildContext context) async {
     if (_haveCalledGetRooms) {
       return;
     }
@@ -65,12 +65,12 @@ class RoomCubit extends Cubit<RoomState> {
 
           _rooms = participantMaps
               .map(Room.fromRoomParticipants)
-              .where((room) => room.opponentUserId != _myUserId)
+              .where((room) => room.otherUserId != _myUserId)
               .toList();
           for (final room in _rooms) {
             _getNewestMessage(context: context, roomId: room.id);
             BlocProvider.of<ProfilesCubit>(context)
-                .getProfile(room.opponentUserId);
+                .getProfile(room.otherUserId);
           }
           emit(RoomsLoaded(
             newUsers: _newUsers,
@@ -107,9 +107,9 @@ class RoomCubit extends Cubit<RoomState> {
   }
 
   /// Creates or returns an existing roomID of both participants
-  Future<String> createRoom(String opponentUserId) async {
+  Future<String> createRoom(String otherUserId) async {
     final res = await supabase.rpc('create_new_room',
-        params: {'opponent_uid': opponentUserId}).execute();
+        params: {'other_user_id': otherUserId}).execute();
     final error = res.error;
     if (error != null) {
       throw error;

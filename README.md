@@ -42,6 +42,11 @@ create table if not exists public.messages (
 );
 comment on table public.messages is 'Holds individual messages within a chat room.';
 
+-- *** Add tables to the publication to enable realtime ***
+
+alter publication supabase_realtime add table public.room_participants;
+alter publication supabase_realtime add table public.messages;
+
 
 -- *** Security definer functions ***
 
@@ -75,10 +80,6 @@ alter table public.messages enable row level security;
 create policy "Users can view messages on rooms they are in." on public.messages for select using (is_room_participant(room_id));
 create policy "Users can insert messages on rooms they are in." on public.messages for insert with check (is_room_participant(room_id) and profile_id = auth.uid());
 
--- *** Add tables to the publication to enable realtime ***
-
-alter publication supabase_realtime add table public.room_participants;
-alter publication supabase_realtime add table public.messages;
 
 -- *** Views and functions ***
 
@@ -87,7 +88,7 @@ alter publication supabase_realtime add table public.messages;
 -- Creates a new room with the user and another user in it.
 -- Will return the room_id of the created room
 -- Will return a room_id if there were already a room with those participants
-create or replace function create_new_room(opponent_uid uuid) returns uuid as $$
+create or replace function create_new_room(other_user_id uuid) returns uuid as $$
     declare
         new_room_id uuid;
     begin
@@ -100,7 +101,7 @@ create or replace function create_new_room(opponent_uid uuid) returns uuid as $$
         select room_id
         into new_room_id
         from rooms_with_profiles
-        where create_new_room.opponent_uid=any(participants)
+        where create_new_room.other_user_id=any(participants)
         and auth.uid()=any(participants);
 
 
@@ -113,9 +114,9 @@ create or replace function create_new_room(opponent_uid uuid) returns uuid as $$
             insert into public.room_participants (profile_id, room_id)
             values (auth.uid(), new_room_id);
 
-            -- Insert the opponent user into the new room
+            -- Insert the other_user user into the new room
             insert into public.room_participants (profile_id, room_id)
-            values (opponent_uid, new_room_id);
+            values (other_user_id, new_room_id);
         end if;
 
         return new_room_id;

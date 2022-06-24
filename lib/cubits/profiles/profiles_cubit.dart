@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:supabase_chat/models/profile.dart';
-import 'package:supabase_chat/utils/constants.dart';
+import 'package:my_chat_app/models/profile.dart';
+import 'package:my_chat_app/utils/constants.dart';
 
 part 'profiles_state.dart';
 

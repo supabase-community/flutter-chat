@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_chat/pages/register_page.dart';
-import 'package:supabase_chat/pages/rooms_page.dart';
-import 'package:supabase_chat/utils/constants.dart';
+import 'package:my_chat_app/pages/register_page.dart';
+import 'package:my_chat_app/pages/rooms_page.dart';
+import 'package:my_chat_app/utils/constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Page to redirect users to the appropreate page depending on the initial auth state
