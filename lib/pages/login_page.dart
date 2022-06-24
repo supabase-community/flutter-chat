@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_chat_app/pages/rooms_page.dart';
+import 'package:my_chat_app/pages/chat_page.dart';
 import 'package:my_chat_app/utils/constants.dart';
 
 class LoginPage extends StatefulWidget {
@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
       context.showErrorSnackBar(message: error.message);
     }
     Navigator.of(context)
-        .pushAndRemoveUntil(RoomsPage.route(), (route) => false);
+        .pushAndRemoveUntil(ChatPage.route(), (route) => false);
   }
 
   @override
@@ -53,13 +53,13 @@ class _LoginPageState extends State<LoginPage> {
             decoration: const InputDecoration(labelText: 'Email'),
             keyboardType: TextInputType.emailAddress,
           ),
-          spacer,
+          formSpacer,
           TextFormField(
             controller: _passwordController,
             decoration: const InputDecoration(labelText: 'Password'),
             obscureText: true,
           ),
-          spacer,
+          formSpacer,
           ElevatedButton(
             onPressed: _isLoading ? null : _signIn,
             child: const Text('Login'),
