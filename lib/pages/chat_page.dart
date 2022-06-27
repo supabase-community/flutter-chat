@@ -41,7 +41,7 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
   }
 
-  Future<void> _loadProfile(String profileId) async {
+  Future<void> _loadProfileCache(String profileId) async {
     if (_profileCache[profileId] != null) {
       return;
     }
@@ -80,7 +80,12 @@ class _ChatPageState extends State<ChatPage> {
                           itemCount: messages.length,
                           itemBuilder: (context, index) {
                             final message = messages[index];
-                            _loadProfile(message.profileId);
+
+                            /// I know it's not good to include code that is not related
+                            /// to rendering the widget inside build method, but for
+                            /// creating an app quick and dirty, it's fine 😂
+                            _loadProfileCache(message.profileId);
+
                             return _ChatBubble(
                               message: message,
                               profile: _profileCache[message.profileId],
