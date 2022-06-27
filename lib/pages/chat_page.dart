@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:my_chat_app/components/user_avatar.dart';
 
 import 'package:my_chat_app/models/message.dart';
 import 'package:my_chat_app/models/profile.dart';
@@ -190,7 +189,12 @@ class _ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> chatContents = [
-      if (!message.isMine) UserAvatar(profile),
+      if (!message.isMine)
+        CircleAvatar(
+          child: profile == null
+              ? preloader
+              : Text(profile!.username.substring(0, 2)),
+        ),
       const SizedBox(width: 12),
       Flexible(
         child: Container(
