@@ -34,7 +34,7 @@ class _ChatPageState extends State<ChatPage> {
     _messagesStream = supabase
         .from('messages')
         .stream(['id'])
-        .order('')
+        .order('created_at')
         .execute()
         .map((maps) => maps
             .map((map) => Message.fromMap(map: map, myUserId: myUserId))
