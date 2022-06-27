@@ -15,7 +15,6 @@ dependencies:
   # supabase_flutter: ^0.2.12
   supabase_flutter:
     path: ../supabase-flutter
-  flutter_bloc: ^8.0.1
   timeago: ^3.1.0
 
 dev_dependencies:
