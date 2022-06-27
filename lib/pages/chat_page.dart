@@ -1,72 +1,100 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_chat_app/components/user_avatar.dart';
-import 'package:my_chat_app/cubits/messages/messages_cubit.dart';
+
 import 'package:my_chat_app/models/message.dart';
+import 'package:my_chat_app/models/profile.dart';
 import 'package:my_chat_app/utils/constants.dart';
 import 'package:timeago/timeago.dart';
 
 /// Page to chat with someone.
 ///
 /// Displays chat bubbles as a ListView and TextField to enter new chat.
-class ChatPage extends StatelessWidget {
+class ChatPage extends StatefulWidget {
   const ChatPage({Key? key}) : super(key: key);
 
   static Route<void> route() {
     return MaterialPageRoute(
-      builder: (context) => BlocProvider<MessagesCubit>(
-        create: (context) => MessagesCubit()..setMessagesListener(),
-        child: const ChatPage(),
-      ),
+      builder: (context) => const ChatPage(),
     );
+  }
+
+  @override
+  State<ChatPage> createState() => _ChatPageState();
+}
+
+class _ChatPageState extends State<ChatPage> {
+  late final Stream<List<Message>> _messagesStream;
+  final Map<String, Profile> _profileCache = {};
+
+  @override
+  void initState() {
+    final myUserId = supabase.auth.currentUser!.id;
+    _messagesStream = supabase
+        .from('messages')
+        .stream(['id'])
+        .order('')
+        .execute()
+        .map((maps) => maps
+            .map((map) => Message.fromMap(map: map, myUserId: myUserId))
+            .toList());
+    super.initState();
+  }
+
+  Future<void> _loadProfile(String profileId) async {
+    if (_profileCache[profileId] != null) {
+      return;
+    }
+    final res = await supabase
+        .from('profiles')
+        .select()
+        .match({'id': profileId})
+        .single()
+        .execute();
+    final data = res.data;
+    if (data != null) {
+      final profile = Profile.fromMap(data);
+      setState(() {
+        _profileCache[profileId] = profile;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Chat')),
-      body: BlocConsumer<MessagesCubit, MessagesState>(
-        listener: (context, state) {
-          if (state is MessagesError) {
-            context.showErrorSnackBar(message: state.message);
-          }
-        },
-        builder: (context, state) {
-          if (state is MessagesInitial) {
-            return preloader;
-          } else if (state is MessagesLoaded) {
-            final messages = state.messages;
+      body: StreamBuilder<List<Message>>(
+        stream: _messagesStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final messages = snapshot.data!;
             return Column(
               children: [
                 Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    reverse: true,
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final message = messages[index];
-                      return _ChatBubble(message: message);
-                    },
-                  ),
+                  child: messages.isEmpty
+                      ? const Center(
+                          child: Text('Start your conversation now :)'),
+                        )
+                      : ListView.builder(
+                          itemCount: messages.length,
+                          itemBuilder: (context, index) {
+                            final message = messages[index];
+                            _loadProfile(message.profileId);
+                            return _ChatBubble(
+                              message: message,
+                              profile: _profileCache[message.profileId],
+                            );
+                          },
+                        ),
                 ),
                 const _MessageBar(),
               ],
             );
-          } else if (state is MessagesEmpty) {
-            return Column(
-              children: const [
-                Expanded(
-                  child: Center(
-                    child: Text('Start your conversation now :)'),
-                  ),
-                ),
-                _MessageBar(),
-              ],
-            );
-          } else if (state is MessagesError) {
-            return Center(child: Text(state.message));
+          } else {
+            return preloader;
           }
-          throw UnimplementedError();
         },
       ),
     );
@@ -132,11 +160,20 @@ class _MessageBarState extends State<_MessageBar> {
 
   void _submitMessage() async {
     final text = _textController.text;
+    final myUserId = supabase.auth.currentUser!.id;
     if (text.isEmpty) {
       return;
     }
-    BlocProvider.of<MessagesCubit>(context).sendMessage(text);
     _textController.clear();
+
+    final res = await supabase.from('messages').insert({
+      'profile_id': myUserId,
+      'content': text,
+    }).execute();
+    final error = res.error;
+    if (error != null) {
+      context.showErrorSnackBar(message: error.message);
+    }
   }
 }
 
@@ -144,14 +181,16 @@ class _ChatBubble extends StatelessWidget {
   const _ChatBubble({
     Key? key,
     required this.message,
+    required this.profile,
   }) : super(key: key);
 
   final Message message;
+  final Profile? profile;
 
   @override
   Widget build(BuildContext context) {
     List<Widget> chatContents = [
-      if (!message.isMine) UserAvatar(userId: message.profileId),
+      if (!message.isMine) UserAvatar(profile),
       const SizedBox(width: 12),
       Flexible(
         child: Container(
