@@ -14,14 +14,6 @@ class Profile {
   /// Date and time when the profile was created
   final DateTime createdAt;
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'username': username,
-      'createdAt': createdAt.millisecondsSinceEpoch,
-    };
-  }
-
   Profile.fromMap(Map<String, dynamic> map)
       : id = map['id'],
         username = map['username'],
