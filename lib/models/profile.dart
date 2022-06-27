@@ -18,16 +18,4 @@ class Profile {
       : id = map['id'],
         username = map['username'],
         createdAt = DateTime.parse(map['created_at']);
-
-  Profile copyWith({
-    String? id,
-    String? name,
-    DateTime? createdAt,
-  }) {
-    return Profile(
-      id: id ?? this.id,
-      username: name ?? username,
-      createdAt: createdAt ?? this.createdAt,
-    );
-  }
 }

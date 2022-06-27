@@ -30,21 +30,4 @@ class Message {
         content = map['content'],
         createdAt = DateTime.parse(map['created_at']),
         isMine = myUserId == map['profile_id'];
-
-  Message copyWith({
-    String? id,
-    String? userId,
-    String? roomId,
-    String? text,
-    DateTime? createdAt,
-    bool? isMine,
-  }) {
-    return Message(
-      id: id ?? this.id,
-      profileId: userId ?? profileId,
-      content: text ?? content,
-      createdAt: createdAt ?? this.createdAt,
-      isMine: isMine ?? this.isMine,
-    );
-  }
 }
