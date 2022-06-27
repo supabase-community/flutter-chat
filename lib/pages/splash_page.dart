@@ -31,7 +31,7 @@ class SplashPageState extends State<SplashPage> {
       }
     } catch (_) {
       context.showErrorSnackBar(
-          message: 'Error occured during session refresh');
+          message: 'Error occurred during session refresh');
       Navigator.of(context)
           .pushAndRemoveUntil(RegisterPage.route(), (_) => false);
     }
@@ -39,8 +39,6 @@ class SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
-    );
+    return const Scaffold(body: preloader);
   }
 }
