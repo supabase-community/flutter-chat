@@ -77,6 +77,7 @@ class _ChatPageState extends State<ChatPage> {
                           child: Text('Start your conversation now :)'),
                         )
                       : ListView.builder(
+                          reverse: true,
                           itemCount: messages.length,
                           itemBuilder: (context, index) {
                             final message = messages[index];
@@ -121,30 +122,32 @@ class _MessageBarState extends State<_MessageBar> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Theme.of(context).cardColor,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                keyboardType: TextInputType.text,
-                maxLines: null,
-                autofocus: true,
-                controller: _textController,
-                decoration: const InputDecoration(
-                  hintText: 'Type a message',
-                  border: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  contentPadding: EdgeInsets.all(8),
+      color: Colors.grey[200],
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  keyboardType: TextInputType.text,
+                  maxLines: null,
+                  autofocus: true,
+                  controller: _textController,
+                  decoration: const InputDecoration(
+                    hintText: 'Type a message',
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.all(8),
+                  ),
                 ),
               ),
-            ),
-            TextButton(
-              onPressed: () => _submitMessage(),
-              child: const Text('Send'),
-            ),
-          ],
+              TextButton(
+                onPressed: () => _submitMessage(),
+                child: const Text('Send'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -208,8 +211,9 @@ class _ChatBubble extends StatelessWidget {
             horizontal: 12,
           ),
           decoration: BoxDecoration(
-            color:
-                message.isMine ? Colors.black : Theme.of(context).primaryColor,
+            color: message.isMine
+                ? Theme.of(context).primaryColor
+                : Colors.grey[300],
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(message.content),

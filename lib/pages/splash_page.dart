@@ -12,33 +12,32 @@ class SplashPage extends StatefulWidget {
   SplashPageState createState() => SplashPageState();
 }
 
-class SplashPageState extends State<SplashPage> {
+class SplashPageState extends SupabaseAuthState<SplashPage> {
   @override
   void initState() {
-    getInitialSession();
     super.initState();
-  }
-
-  Future<void> getInitialSession() async {
-    try {
-      final session = await SupabaseAuth.instance.initialSession;
-      if (session == null) {
-        Navigator.of(context)
-            .pushAndRemoveUntil(RegisterPage.route(), (_) => false);
-      } else {
-        Navigator.of(context)
-            .pushAndRemoveUntil(ChatPage.route(), (_) => false);
-      }
-    } catch (_) {
-      context.showErrorSnackBar(
-          message: 'Error occurred during session refresh');
-      Navigator.of(context)
-          .pushAndRemoveUntil(RegisterPage.route(), (_) => false);
-    }
+    recoverSupabaseSession();
   }
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(body: preloader);
   }
+
+  @override
+  void onAuthenticated(Session session) {
+    Navigator.of(context).pushAndRemoveUntil(ChatPage.route(), (_) => false);
+  }
+
+  @override
+  void onUnauthenticated() {
+    Navigator.of(context)
+        .pushAndRemoveUntil(RegisterPage.route(), (_) => false);
+  }
+
+  @override
+  void onErrorAuthenticating(String message) {}
+
+  @override
+  void onPasswordRecovery(Session session) {}
 }

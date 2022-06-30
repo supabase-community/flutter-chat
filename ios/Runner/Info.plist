@@ -58,5 +58,7 @@
 	<string>Need access to camera to select profile image.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Need access to mic.</string>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 </dict>
 </plist>

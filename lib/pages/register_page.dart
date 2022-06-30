@@ -42,7 +42,8 @@ class _RegisterPageState extends State<RegisterPage> {
       context.showErrorSnackBar(message: error.message);
       return;
     }
-    Navigator.of(context).push(ChatPage.route());
+    Navigator.of(context)
+        .pushAndRemoveUntil(ChatPage.route(), (route) => false);
   }
 
   @override
