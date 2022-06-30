@@ -35,7 +35,7 @@ final appTheme = ThemeData.light().copyWith(
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
       onPrimary: Colors.white,
-      primary: Colors.green,
+      primary: Colors.orange,
     ),
   ),
   inputDecorationTheme: InputDecorationTheme(
