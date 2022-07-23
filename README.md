@@ -4,6 +4,8 @@ Simple chat app to demonstrate the realtime capability of Supabase with Flutter.
 
 With [WALRUS](https://github.com/supabase/walrus), Supabase now can have row level security enabled with its realtime feature. This repo utilizes row level security on realtime to securely exchange private messages with other users using the app.
 
+You can also find an example using [row level security](https://supabase.com/docs/guides/auth/row-level-security) to provide chat rooms to enable 1 to 1 chats on the [`with-auth` branch](https://github.com/supabase-community/flutter-chat/tree/with_auth). 
+
 ## SQL
 
 ```sql
