@@ -35,11 +35,10 @@ class _RegisterPageState extends State<RegisterPage> {
     final email = _emailController.text;
     final password = _passwordController.text;
     final username = _usernameController.text;
-    final res = await supabase.auth
-        .signUp(email, password, userMetadata: {'username': username});
-    final error = res.error;
-    if (error != null) {
-      context.showErrorSnackBar(message: error.message);
+    try {
+      final res = await supabase.auth.signUp(email, password, userMetadata: {'username': username});
+    } catch (e) {
+      context.showErrorSnackBar(message: e.toString());
       return;
     }
     Navigator.of(context).push(RoomsPage.route());

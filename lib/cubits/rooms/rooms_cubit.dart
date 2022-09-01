@@ -36,22 +36,23 @@ class RoomCubit extends Cubit<RoomState> {
     }
     _haveCalledGetRooms = true;
 
-    _myUserId = supabase.auth.user()!.id;
+    _myUserId = supabase.auth.currentUser!.id;
 
-    final res = await supabase
-        .from('profiles')
-        .select()
-        .not('id', 'eq', _myUserId)
-        .order('created_at')
-        .limit(12)
-        .execute();
-    final error = res.error;
-    if (error != null) {
-      emit(RoomsError('Error loading new users'));
-      return;
+    try {
+      final res = await supabase.from('profiles').select().not('id', 'eq', _myUserId).order('created_at').limit(12);
+      if (res.isEmpty) {
+        throw Exception("No users foound");
+      } else {
+        _newUsers = res.map((profile) => Profile.fromMap(profile)).toList();
+        final data = List<Map<String, dynamic>>.from(res.data as List);
+        _newUsers = data.map(Profile.fromMap).toList();
+      }
+    } on Exception catch (e) {
+      if (e.toString().isNotEmpty) {
+        emit(RoomsError('Error loading new users'));
+        return;
+      }
     }
-    final data = List<Map<String, dynamic>>.from(res.data as List);
-    _newUsers = data.map(Profile.fromMap).toList();
 
     /// Get realtime updates on rooms that the user is in
     _rawRoomsSubscription = supabase
@@ -63,14 +64,11 @@ class RoomCubit extends Cubit<RoomState> {
             emit(RoomsEmpty(newUsers: _newUsers));
           }
 
-          _rooms = participantMaps
-              .map(Room.fromRoomParticipants)
-              .where((room) => room.otherUserId != _myUserId)
-              .toList();
+          _rooms =
+              participantMaps.map(Room.fromRoomParticipants).where((room) => room.otherUserId != _myUserId).toList();
           for (final room in _rooms) {
             _getNewestMessage(context: context, roomId: room.id);
-            BlocProvider.of<ProfilesCubit>(context)
-                .getProfile(room.otherUserId);
+            BlocProvider.of<ProfilesCubit>(context).getProfile(room.otherUserId);
           }
           emit(RoomsLoaded(
             newUsers: _newUsers,
@@ -93,10 +91,8 @@ class RoomCubit extends Cubit<RoomState> {
       _rooms.sort((a, b) {
         /// Sort according to the last message
         /// Use the room createdAt when last message is not available
-        final aTimeStamp =
-            a.lastMessage != null ? a.lastMessage!.createdAt : a.createdAt;
-        final bTimeStamp =
-            b.lastMessage != null ? b.lastMessage!.createdAt : b.createdAt;
+        final aTimeStamp = a.lastMessage != null ? a.lastMessage!.createdAt : a.createdAt;
+        final bTimeStamp = b.lastMessage != null ? b.lastMessage!.createdAt : b.createdAt;
         return bTimeStamp.compareTo(aTimeStamp);
       });
       emit(RoomsLoaded(
@@ -108,14 +104,16 @@ class RoomCubit extends Cubit<RoomState> {
 
   /// Creates or returns an existing roomID of both participants
   Future<String> createRoom(String otherUserId) async {
-    final res = await supabase.rpc('create_new_room',
-        params: {'other_user_id': otherUserId}).execute();
-    final error = res.error;
-    if (error != null) {
-      throw error;
+    final roomId = await _messagesProvider.createRoom(otherUserId);
+    try {
+      final res = await supabase.rpc('create_new_room', params: {'other_user_id': otherUserId});
+      emit(RoomsLoaded(rooms: _rooms, newUsers: _newUsers));
+      return res.data as String;
+    } on Exception catch (_, e) {
+      print(e);
+      emit(RoomsError('Error creating room'));
+      return e.toString();
     }
-    emit(RoomsLoaded(rooms: _rooms, newUsers: _newUsers));
-    return res.data as String;
   }
 
   @override

@@ -24,10 +24,9 @@ class MessagesCubit extends Cubit<MessagesState> {
   void setMessagesListener(String roomId) {
     _roomId = roomId;
 
-    _myUserId = supabase.auth.user()!.id;
+    _myUserId = supabase.auth.currentUser!.id;
 
-    _messagesSubscription =
-        _messagesProvider.subscribe(roomId).listen((messages) {
+    _messagesSubscription = _messagesProvider.subscribe(roomId).listen((messages) {
       _messages = messages;
       if (_messages.isEmpty) {
         emit(MessagesEmpty());
@@ -49,19 +48,20 @@ class MessagesCubit extends Cubit<MessagesState> {
     );
     _messages.insert(0, message);
     emit(MessagesLoaded(_messages));
-    final result =
-        await supabase.from('messages').insert(message.toMap()).execute();
-    final error = result.error;
-    if (error != null) {
-      emit(MessagesError('Error submitting message.'));
-      _messages.removeWhere((message) => message.id == 'new');
-      emit(MessagesLoaded(_messages));
+    try {
+      final result = await supabase.from('messages').insert(message.toMap());
+    } on Exception catch (e, _) {
+      if (e.toString().isNotEmpty) {
+        emit(MessagesError('Error submitting message.'));
+        _messages.removeWhere((message) => message.id == 'new');
+        emit(MessagesLoaded(_messages));
+      }
     }
-  }
 
-  @override
-  Future<void> close() {
-    _messagesSubscription?.cancel();
-    return super.close();
+    @override
+    Future<void> close() {
+      _messagesSubscription?.cancel();
+      return super.close();
+    }
   }
 }

@@ -1,27 +1,65 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:timeago/timeago.dart';
+
 import 'package:my_chat_app/components/user_avatar.dart';
 import 'package:my_chat_app/cubits/messages/messages_cubit.dart';
 import 'package:my_chat_app/models/message.dart';
 import 'package:my_chat_app/utils/constants.dart';
 import 'package:my_chat_app/utils/messages_provider.dart';
-import 'package:timeago/timeago.dart';
+
+final messagesProvider = MessagesProvider<List<Message>>((ref) {
+  return ref.read(messagesRepository);
+});
+  // option 2
+final repo = Provider<Repo>((ref) => Repo(ref));
+
+
+  var messagesRepository;
+  return ref.read(messagesRepository);
+};
+
 
 /// Page to chat with someone.
 ///
 /// Displays chat bubbles as a ListView and TextField to enter new chat.
 class ChatPage extends StatelessWidget {
-  const ChatPage({Key? key}) : super(key: key);
+  final Ref ref;
+  
+  
 
-  static Route<void> route(String roomId) {
-    final messagesProvider = MessagesProvider();
+
+    ChatPage({
+    Key? key,
+    required this.ref,
+    required this.MessagesProvider,
+  }) : super(key: key);
+
+   Route<void> route(String roomId) {
+    
     return MaterialPageRoute(
       builder: (context) => BlocProvider<MessagesCubit>(
-        create: (context) => MessagesCubit(messagesProvider: messagesProvider)
-          ..setMessagesListener(roomId),
-        child: const ChatPage(),
+        create: (context) => MessagesCubit(messagesProvider: messagesProvider)..setMessagesListener(roomId),
+        child:  ChatPage(
+          ref: ref,
+          MessagesProvider: null,
+        ),
       ),
     );
+    
+      @override
+      Widget build(BuildContext context) {
+        // TODO: implement build
+        
+      }
+   }
+   
+     @override
+     Widget build(BuildContext context) {
+    // TODO: implement build
+ 
+     }
   }
 
   @override
@@ -163,8 +201,7 @@ class _ChatBubble extends StatelessWidget {
             horizontal: 12,
           ),
           decoration: BoxDecoration(
-            color:
-                message.isMine ? Colors.black : Theme.of(context).primaryColor,
+            color: message.isMine ? Colors.black : Theme.of(context).primaryColor,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(message.content),
@@ -177,11 +214,11 @@ class _ChatBubble extends StatelessWidget {
     if (message.isMine) {
       chatContents = chatContents.reversed.toList();
     }
+    state = AsyncValue.data(chatContents);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 18),
       child: Row(
-        mainAxisAlignment:
-            message.isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: message.isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: chatContents,
       ),
     );

@@ -1,25 +1,39 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_chat_app/cubits/profiles/profiles_cubit.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:timeago/timeago.dart';
 
+import 'package:my_chat_app/cubits/profiles/profiles_cubit.dart';
 import 'package:my_chat_app/cubits/rooms/rooms_cubit.dart';
+import 'package:my_chat_app/models/message.dart';
 import 'package:my_chat_app/models/profile.dart';
 import 'package:my_chat_app/pages/chat_page.dart';
 import 'package:my_chat_app/utils/constants.dart';
 import 'package:my_chat_app/utils/messages_provider.dart';
-import 'package:timeago/timeago.dart';
+
+final roomsControllerProvider = Provider<List<Message>>((ref) {});
+
+final repo = Provider<RoomsRepository>((ref) => RoomsRepository(ref));
 
 /// Displays the list of chat threads
 class RoomsPage extends StatelessWidget {
-  const RoomsPage({Key? key}) : super(key: key);
+  final Ref ref;
+  RoomsRepository roomsRepository;
+  RoomsPage({
+    Key? key,
+    required this.ref,
+    required this.roomsRepository,
+  }) : super(key: key);
 
-  static Route<void> route() {
-    final messageProvider = MessagesProvider();
+  Route<void> route() {
+    ref.read(repo);
     return MaterialPageRoute(
       builder: (context) => BlocProvider<RoomCubit>(
-        create: (context) => RoomCubit(messagesProvider: messageProvider)
-          ..initializeRooms(context),
-        child: const RoomsPage(),
+        create: (context) => RoomCubit(messagesProvider: messageProvider)..initializeRooms(context),
+        child: const RoomsPage(
+          ref: ref,
+        ),
       ),
     );
   }
@@ -52,16 +66,11 @@ class RoomsPage extends StatelessWidget {
                             final otherUser = profiles[room.otherUserId];
 
                             return ListTile(
-                              onTap: () => Navigator.of(context)
-                                  .push(ChatPage.route(room.id)),
+                              onTap: () => Navigator.of(context).push(ChatPage.route(room.id)),
                               leading: CircleAvatar(
-                                child: otherUser == null
-                                    ? preloader
-                                    : Text(otherUser.username.substring(0, 2)),
+                                child: otherUser == null ? preloader : Text(otherUser.username.substring(0, 2)),
                               ),
-                              title: Text(otherUser == null
-                                  ? 'Loading...'
-                                  : otherUser.username),
+                              title: Text(otherUser == null ? 'Loading...' : otherUser.username),
                               subtitle: room.lastMessage != null
                                   ? Text(
                                       room.lastMessage!.content,
@@ -69,9 +78,7 @@ class RoomsPage extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                     )
                                   : const Text('Room created'),
-                              trailing: Text(format(
-                                  room.lastMessage?.createdAt ?? room.createdAt,
-                                  locale: 'en_short')),
+                              trailing: Text(format(room.lastMessage?.createdAt ?? room.createdAt, locale: 'en_short')),
                             );
                           },
                         ),
@@ -123,12 +130,10 @@ class _NewUsers extends StatelessWidget {
             .map<Widget>((user) => InkWell(
                   onTap: () async {
                     try {
-                      final roomId = await BlocProvider.of<RoomCubit>(context)
-                          .createRoom(user.id);
+                      final roomId = await BlocProvider.of<RoomCubit>(context).createRoom(user.id);
                       Navigator.of(context).push(ChatPage.route(roomId));
                     } catch (_) {
-                      context.showErrorSnackBar(
-                          message: 'Failed creating a new room');
+                      context.showErrorSnackBar(message: 'Failed creating a new room');
                     }
                   },
                   child: Padding(

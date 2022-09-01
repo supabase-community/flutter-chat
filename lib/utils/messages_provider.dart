@@ -1,26 +1,30 @@
-import 'dart:async';
 
-import 'package:rxdart/subjects.dart';
+import 'package:my_chat_app/pages/chat_page.dart';
 import 'package:my_chat_app/models/message.dart';
 import 'package:my_chat_app/utils/constants.dart';
+import 'package:my_chat_app/utils/messages_provider.dart';
+// import 'package:rxdart/subjects.dart';
 
-class MessagesProvider {
-  static final MessagesProvider _singleton = MessagesProvider._();
+MessagesNotifierProvider messagesNotifierProvider = StateNotifierProvider<AsyncLoading><void>>((ref) {
+  var resp = ref.read(messagesRepository);
+});
+class MessagesNotifierProvider extends StateNotifierProvider<List<Message>, AsyncValue<void>>((ref) {
+  return 
+} {
+  // static final MessagesNotifierProvider _singleton = MessagesNotifierProvider._();
 
-  factory MessagesProvider() {
-    return _singleton;
+  factory MessagesProvider(T Function(Ref ref, AsyncValue<void>) builder) {
+    return _singleton;1
   }
 
-  MessagesProvider._();
-
-  final Map<String, StreamSubscription<List<Message>>> _messageSubscriptions =
-      {};
+  // MessagesProvider._();
+  final Map<String, StreamSubscription<List<Message>>> _messageSubscriptions = {};
 
   final Map<String, StreamController<List<Message>>> _messageControllers = {};
   String? _myUserId;
 
-  Stream<List<Message>> subscribe(String roomId) {
-    _myUserId ??= supabase.auth.user()!.id;
+  StreamSubscription<List<Message>> subscribe(String roomId) {
+    _myUserId ??= supabase.auth.currentUser!.id;
 
     _messageControllers[roomId] ??= BehaviorSubject();
 
@@ -38,7 +42,12 @@ class MessagesProvider {
                 ),
               )
               .toList(),
-        )
+        ).when(
+          loading: const CircularProgressIndicator(),
+          data: null, 
+          error: (error) {
+            print(error);
+        })
         .listen((messages) {
           _messageControllers[roomId]!.add(messages);
         });
@@ -54,4 +63,15 @@ class MessagesProvider {
       controller.close();
     }
   }
+
+  Future<Room> createRoom(String userId ) {
+    supabase.from("messages:room_id=eq.$userId").insert({
+      'room_id': roomId,
+      'profile_id': userId,Iso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+      'created_at': DateTime.now().tooIso8601String(),
+     },
+    )
+  };
 }
+)

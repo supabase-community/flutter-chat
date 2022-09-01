@@ -22,16 +22,18 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
     });
-    final response = await supabase.auth.signIn(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
-    final error = response.error;
-    if (error != null) {
-      context.showErrorSnackBar(message: error.message);
+
+    try {
+      await supabase.auth.signIn(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+    } on Exception catch (e) {
+      context.showErrorSnackBar(message: e.toString());
+      return;
     }
-    Navigator.of(context)
-        .pushAndRemoveUntil(RoomsPage.route(), (route) => false);
+
+    Navigator.of(context).pushAndRemoveUntil(RoomsPage.route(), (route) => false);
   }
 
   @override
