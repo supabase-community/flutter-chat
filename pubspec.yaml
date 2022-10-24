@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  supabase_flutter: ^0.2.12
+  supabase_flutter: ^1.0.0
   timeago: ^3.1.0
 
 dev_dependencies:

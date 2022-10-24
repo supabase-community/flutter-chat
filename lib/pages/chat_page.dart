@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:my_chat_app/models/message.dart';
 import 'package:my_chat_app/models/profile.dart';
 import 'package:my_chat_app/utils/constants.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart';
 
 /// Page to chat with someone.
@@ -32,9 +33,8 @@ class _ChatPageState extends State<ChatPage> {
     final myUserId = supabase.auth.currentUser!.id;
     _messagesStream = supabase
         .from('messages')
-        .stream(['id'])
+        .stream(primaryKey: ['id'])
         .order('created_at')
-        .execute()
         .map((maps) => maps
             .map((map) => Message.fromMap(map: map, myUserId: myUserId))
             .toList());
@@ -45,19 +45,12 @@ class _ChatPageState extends State<ChatPage> {
     if (_profileCache[profileId] != null) {
       return;
     }
-    final res = await supabase
-        .from('profiles')
-        .select()
-        .match({'id': profileId})
-        .single()
-        .execute();
-    final data = res.data;
-    if (data != null) {
-      final profile = Profile.fromMap(data);
-      setState(() {
-        _profileCache[profileId] = profile;
-      });
-    }
+    final data =
+        await supabase.from('profiles').select().eq('id', profileId).single();
+    final profile = Profile.fromMap(data);
+    setState(() {
+      _profileCache[profileId] = profile;
+    });
   }
 
   @override
@@ -172,14 +165,15 @@ class _MessageBarState extends State<_MessageBar> {
       return;
     }
     _textController.clear();
-
-    final res = await supabase.from('messages').insert({
-      'profile_id': myUserId,
-      'content': text,
-    }).execute();
-    final error = res.error;
-    if (error != null) {
+    try {
+      await supabase.from('messages').insert({
+        'profile_id': myUserId,
+        'content': text,
+      });
+    } on PostgrestException catch (error) {
       context.showErrorSnackBar(message: error.message);
+    } catch (_) {
+      context.showErrorSnackBar(message: unexpectedErrorMessage);
     }
   }
 }

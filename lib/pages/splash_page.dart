@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:my_chat_app/pages/chat_page.dart';
 import 'package:my_chat_app/pages/register_page.dart';
 import 'package:my_chat_app/utils/constants.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Page to redirect users to the appropriate page depending on the initial auth state
 class SplashPage extends StatefulWidget {
@@ -12,32 +11,25 @@ class SplashPage extends StatefulWidget {
   SplashPageState createState() => SplashPageState();
 }
 
-class SplashPageState extends SupabaseAuthState<SplashPage> {
+class SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    recoverSupabaseSession();
+  }
+
+  void _redirect() {
+    final session = supabase.auth.currentSession;
+    if (session == null) {
+      Navigator.of(context)
+          .pushAndRemoveUntil(RegisterPage.route(), (route) => false);
+    } else {
+      Navigator.of(context)
+          .pushAndRemoveUntil(ChatPage.route(), (route) => false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(body: preloader);
   }
-
-  @override
-  void onAuthenticated(Session session) {
-    Navigator.of(context).pushAndRemoveUntil(ChatPage.route(), (_) => false);
-  }
-
-  @override
-  void onUnauthenticated() {
-    Navigator.of(context)
-        .pushAndRemoveUntil(RegisterPage.route(), (_) => false);
-  }
-
-  @override
-  void onErrorAuthenticating(String message) {}
-
-  @override
-  void onPasswordRecovery(Session session) {}
 }
