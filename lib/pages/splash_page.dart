@@ -12,12 +12,20 @@ class SplashPage extends StatefulWidget {
 }
 
 class SplashPageState extends State<SplashPage> {
+  bool _hasCalledRedirect = false;
+
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _redirect();
   }
 
-  void _redirect() {
+  Future<void> _redirect() async {
+    await Future.delayed(Duration.zero);
+    if (_hasCalledRedirect) {
+      return;
+    }
+    _hasCalledRedirect = true;
     final session = supabase.auth.currentSession;
     if (session == null) {
       Navigator.of(context)
