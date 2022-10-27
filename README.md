@@ -4,6 +4,8 @@ Simple chat app to demonstrate the realtime capability of Supabase with Flutter.
 
 ## SQL
 
+Here are the sql statements to setup the database.
+
 ```sql
 -- *** Table definitions ***
 
@@ -16,6 +18,45 @@ create table if not exists public.profiles (
     constraint username_validation check (username ~* '^[A-Za-z0-9_]{3,24}$')
 );
 comment on table public.profiles is 'Holds all of users profile information';
+
+create table if not exists public.messages (
+    id uuid not null primary key default uuid_generate_v4(),
+    profile_id uuid default auth.uid() references public.profiles(id) on delete cascade not null,
+    content varchar(500) not null,
+    created_at timestamp with time zone default timezone('utc' :: text, now()) not null
+);
+comment on table public.messages is 'Holds individual messages within a chat room.';
+
+-- *** Add tables to the publication to enable realtime ***
+alter publication supabase_realtime add table public.messages;
+
+
+-- Function to create a new row in profiles table upon signup
+-- Also copies the username value from metadata
+create or replace function handle_new_user() returns trigger as $$
+    begin
+        insert into public.profiles(id, username)
+        values(new.id, new.raw_user_meta_data->>'username');
+
+        return new;
+    end;
+$$ language plpgsql security definer;
+
+-- Trigger to call `handle_new_user` when new user signs up
+create trigger on_auth_user_created
+    after insert on auth.users
+    for each row
+    execute function handle_new_user();
+```
+
+The following SQL statements also needs to be run to add tables and functions to support private chat rooms.
+
+
+> **Note:**`
+> If you already have some data in your `messages` table, you will have to delete them in order to run the following query.
+
+```sql
+-- *** Table definitions ***
 
 create table if not exists public.rooms (
     id uuid not null primary key default uuid_generate_v4(),
@@ -31,20 +72,12 @@ create table if not exists public.room_participants (
 );
 comment on table public.room_participants is 'Relational table of users and rooms.';
 
-create table if not exists public.messages (
-    id uuid not null primary key default uuid_generate_v4(),
-    profile_id uuid default auth.uid() references public.profiles(id) on delete cascade not null,
-    room_id uuid references public.rooms on delete cascade not null,
-    content varchar(500) not null,
-    created_at timestamp with time zone default timezone('utc' :: text, now()) not null
-);
-comment on table public.messages is 'Holds individual messages within a chat room.';
+alter table public.messages
+add column room_id uuid references public.rooms(id) on delete cascade not null;
 
 -- *** Add tables to the publication to enable realtime ***
 
 alter publication supabase_realtime add table public.room_participants;
-alter publication supabase_realtime add table public.messages;
-
 
 -- *** Security definer functions ***
 
@@ -120,21 +153,4 @@ create or replace function create_new_room(other_user_id uuid) returns uuid as $
         return new_room_id;
     end
 $$ language plpgsql security definer;
-
--- Function to create a new row in profiles table upon signup
--- Also copies the username value from metadata
-create or replace function handle_new_user() returns trigger as $$
-    begin
-        insert into public.profiles(id, username)
-        values(new.id, new.raw_user_meta_data->>'username');
-
-        return new;
-    end;
-$$ language plpgsql security definer;
-
--- Trigger to call `handle_new_user` when new user signs up
-create trigger on_auth_user_created
-    after insert on auth.users
-    for each row
-    execute function handle_new_user();
 ```
