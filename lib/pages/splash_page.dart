@@ -20,6 +20,9 @@ class SplashPageState extends State<SplashPage> {
   }
 
   Future<void> getInitialSession() async {
+    // quick and dirty way to wait for the widget to mount
+    await Future.delayed(Duration.zero);
+
     try {
       final session = await SupabaseAuth.instance.initialSession;
       if (session == null) {
@@ -31,7 +34,8 @@ class SplashPageState extends State<SplashPage> {
       }
     } catch (_) {
       context.showErrorSnackBar(
-          message: 'Error occured during session refresh');
+        message: 'Error occured during session refresh',
+      );
       Navigator.of(context)
           .pushAndRemoveUntil(RegisterPage.route(), (_) => false);
     }
