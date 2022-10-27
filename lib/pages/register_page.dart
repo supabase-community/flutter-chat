@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_chat_app/pages/login_page.dart';
 import 'package:my_chat_app/pages/rooms_page.dart';
 import 'package:my_chat_app/utils/constants.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key, required this.isRegistering}) : super(key: key);
@@ -35,14 +36,18 @@ class _RegisterPageState extends State<RegisterPage> {
     final email = _emailController.text;
     final password = _passwordController.text;
     final username = _usernameController.text;
-    final res = await supabase.auth
-        .signUp(email, password, userMetadata: {'username': username});
-    final error = res.error;
-    if (error != null) {
+    try {
+      final res = await supabase.auth.signUp(
+        email: email,
+        password: password,
+        data: {'username': username},
+      );
+      Navigator.of(context).push(RoomsPage.route());
+    } on AuthException catch (error) {
       context.showErrorSnackBar(message: error.message);
-      return;
+    } catch (_) {
+      context.showErrorSnackBar(message: unexpectedErrorMessage);
     }
-    Navigator.of(context).push(RoomsPage.route());
   }
 
   @override

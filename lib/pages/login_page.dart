@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_chat_app/pages/rooms_page.dart';
 import 'package:my_chat_app/utils/constants.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -22,16 +23,18 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _isLoading = true;
     });
-    final response = await supabase.auth.signIn(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
-    final error = response.error;
-    if (error != null) {
+    try {
+      final response = await supabase.auth.signInWithPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+      Navigator.of(context)
+          .pushAndRemoveUntil(RoomsPage.route(), (route) => false);
+    } on AuthException catch (error) {
       context.showErrorSnackBar(message: error.message);
+    } catch (_) {
+      context.showErrorSnackBar(message: unexpectedErrorMessage);
     }
-    Navigator.of(context)
-        .pushAndRemoveUntil(RoomsPage.route(), (route) => false);
   }
 
   @override

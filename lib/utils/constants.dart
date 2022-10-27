@@ -14,6 +14,9 @@ const spacer = SizedBox(width: 16, height: 16);
 /// Some padding for all the forms to use
 const formPadding = EdgeInsets.symmetric(vertical: 20, horizontal: 16);
 
+/// Error message to display the user when unexpected error occurs.
+const unexpectedErrorMessage = 'Unexpected error occured.';
+
 /// Basic theme to change the look and feel of the app
 final appTheme = ThemeData.light().copyWith(
   primaryColorDark: Colors.orange,
@@ -29,13 +32,13 @@ final appTheme = ThemeData.light().copyWith(
   primaryColor: Colors.orange,
   textButtonTheme: TextButtonThemeData(
     style: TextButton.styleFrom(
-      primary: Colors.orange,
+      foregroundColor: Colors.orange,
     ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
-      onPrimary: Colors.white,
-      primary: Colors.green,
+      foregroundColor: Colors.white,
+      backgroundColor: Colors.green,
     ),
   ),
   inputDecorationTheme: InputDecorationTheme(

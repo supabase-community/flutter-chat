@@ -20,15 +20,14 @@ class MessagesProvider {
   String? _myUserId;
 
   Stream<List<Message>> subscribe(String roomId) {
-    _myUserId ??= supabase.auth.user()!.id;
+    _myUserId ??= supabase.auth.currentUser?.id;
 
     _messageControllers[roomId] ??= BehaviorSubject();
 
     _messageSubscriptions[roomId] ??= supabase
         .from('messages:room_id=eq.$roomId')
-        .stream(['id'])
+        .stream(primaryKey: ['id'])
         .order('created_at')
-        .execute()
         .map<List<Message>>(
           (data) => data
               .map<Message>(

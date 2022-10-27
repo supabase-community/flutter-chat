@@ -24,7 +24,7 @@ class MessagesCubit extends Cubit<MessagesState> {
   void setMessagesListener(String roomId) {
     _roomId = roomId;
 
-    _myUserId = supabase.auth.user()!.id;
+    _myUserId = supabase.auth.currentUser!.id;
 
     _messagesSubscription =
         _messagesProvider.subscribe(roomId).listen((messages) {
@@ -49,10 +49,10 @@ class MessagesCubit extends Cubit<MessagesState> {
     );
     _messages.insert(0, message);
     emit(MessagesLoaded(_messages));
-    final result =
-        await supabase.from('messages').insert(message.toMap()).execute();
-    final error = result.error;
-    if (error != null) {
+
+    try {
+      await supabase.from('messages').insert(message.toMap());
+    } catch (_) {
       emit(MessagesError('Error submitting message.'));
       _messages.removeWhere((message) => message.id == 'new');
       emit(MessagesLoaded(_messages));

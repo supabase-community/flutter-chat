@@ -36,47 +36,44 @@ class RoomCubit extends Cubit<RoomState> {
     }
     _haveCalledGetRooms = true;
 
-    _myUserId = supabase.auth.user()!.id;
+    _myUserId = supabase.auth.currentUser!.id;
 
-    final res = await supabase
-        .from('profiles')
-        .select()
-        .not('id', 'eq', _myUserId)
-        .order('created_at')
-        .limit(12)
-        .execute();
-    final error = res.error;
-    if (error != null) {
+    late final List data;
+
+    try {
+      data = await supabase
+          .from('profiles')
+          .select()
+          .not('id', 'eq', _myUserId)
+          .order('created_at')
+          .limit(12);
+    } catch (_) {
       emit(RoomsError('Error loading new users'));
-      return;
     }
-    final data = List<Map<String, dynamic>>.from(res.data as List);
-    _newUsers = data.map(Profile.fromMap).toList();
+
+    final rows = List<Map<String, dynamic>>.from(data);
+    _newUsers = rows.map(Profile.fromMap).toList();
 
     /// Get realtime updates on rooms that the user is in
-    _rawRoomsSubscription = supabase
-        .from('room_participants')
-        .stream(['room_id', 'profile_id'])
-        .execute()
-        .listen((participantMaps) async {
-          if (participantMaps.isEmpty) {
-            emit(RoomsEmpty(newUsers: _newUsers));
-          }
+    _rawRoomsSubscription = supabase.from('room_participants').stream(
+        primaryKey: ['room_id', 'profile_id']).listen((participantMaps) async {
+      if (participantMaps.isEmpty) {
+        emit(RoomsEmpty(newUsers: _newUsers));
+      }
 
-          _rooms = participantMaps
-              .map(Room.fromRoomParticipants)
-              .where((room) => room.otherUserId != _myUserId)
-              .toList();
-          for (final room in _rooms) {
-            _getNewestMessage(context: context, roomId: room.id);
-            BlocProvider.of<ProfilesCubit>(context)
-                .getProfile(room.otherUserId);
-          }
-          emit(RoomsLoaded(
-            newUsers: _newUsers,
-            rooms: _rooms,
-          ));
-        });
+      _rooms = participantMaps
+          .map(Room.fromRoomParticipants)
+          .where((room) => room.otherUserId != _myUserId)
+          .toList();
+      for (final room in _rooms) {
+        _getNewestMessage(context: context, roomId: room.id);
+        BlocProvider.of<ProfilesCubit>(context).getProfile(room.otherUserId);
+      }
+      emit(RoomsLoaded(
+        newUsers: _newUsers,
+        rooms: _rooms,
+      ));
+    });
   }
 
   // Setup listeners to listen to the most recent message in each room
@@ -108,14 +105,10 @@ class RoomCubit extends Cubit<RoomState> {
 
   /// Creates or returns an existing roomID of both participants
   Future<String> createRoom(String otherUserId) async {
-    final res = await supabase.rpc('create_new_room',
-        params: {'other_user_id': otherUserId}).execute();
-    final error = res.error;
-    if (error != null) {
-      throw error;
-    }
+    final data = await supabase
+        .rpc('create_new_room', params: {'other_user_id': otherUserId});
     emit(RoomsLoaded(rooms: _rooms, newUsers: _newUsers));
-    return res.data as String;
+    return data as String;
   }
 
   @override
