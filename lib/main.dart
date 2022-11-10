@@ -7,7 +7,6 @@ import 'package:my_chat_app/pages/splash_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Supabase.instance.dispose();
 
   await Supabase.initialize(
     // TODO: Replace credentials with your own
