@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:my_chat_app/pages/rooms_page.dart';
 import 'package:my_chat_app/utils/constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -24,16 +23,19 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
     try {
-      final response = await supabase.auth.signInWithPassword(
+      await supabase.auth.signInWithPassword(
         email: _emailController.text,
         password: _passwordController.text,
       );
-      Navigator.of(context)
-          .pushAndRemoveUntil(RoomsPage.route(), (route) => false);
     } on AuthException catch (error) {
       context.showErrorSnackBar(message: error.message);
     } catch (_) {
       context.showErrorSnackBar(message: unexpectedErrorMessage);
+    }
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+      });
     }
   }
 

@@ -59,6 +59,7 @@ class RoomCubit extends Cubit<RoomState> {
         primaryKey: ['room_id', 'profile_id']).listen((participantMaps) async {
       if (participantMaps.isEmpty) {
         emit(RoomsEmpty(newUsers: _newUsers));
+        return;
       }
 
       _rooms = participantMaps
@@ -73,6 +74,8 @@ class RoomCubit extends Cubit<RoomState> {
         newUsers: _newUsers,
         rooms: _rooms,
       ));
+    }, onError: (error) {
+      emit(RoomsError('Error loading rooms'));
     });
   }
 
@@ -96,10 +99,12 @@ class RoomCubit extends Cubit<RoomState> {
             b.lastMessage != null ? b.lastMessage!.createdAt : b.createdAt;
         return bTimeStamp.compareTo(aTimeStamp);
       });
-      emit(RoomsLoaded(
-        newUsers: _newUsers,
-        rooms: _rooms,
-      ));
+      if (!isClosed) {
+        emit(RoomsLoaded(
+          newUsers: _newUsers,
+          rooms: _rooms,
+        ));
+      }
     });
   }
 

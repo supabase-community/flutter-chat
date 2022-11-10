@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:my_chat_app/models/message.dart';
 import 'package:my_chat_app/utils/constants.dart';
@@ -25,8 +26,9 @@ class MessagesProvider {
     _messageControllers[roomId] ??= BehaviorSubject();
 
     _messageSubscriptions[roomId] ??= supabase
-        .from('messages:room_id=eq.$roomId')
+        .from('messages')
         .stream(primaryKey: ['id'])
+        .eq('room_id', roomId)
         .order('created_at')
         .map<List<Message>>(
           (data) => data
@@ -40,6 +42,8 @@ class MessagesProvider {
         )
         .listen((messages) {
           _messageControllers[roomId]!.add(messages);
+        }, onError: (error) {
+          debugPrint(error.toString());
         });
 
     return _messageControllers[roomId]!.stream;

@@ -12,6 +12,7 @@ Future<void> main() async {
     // TODO: Replace credentials with your own
     url: 'supabase_url',
     anonKey: 'supabase_anon_key',
+    authCallbackUrlHostname: 'login',
   );
 
   runApp(const MyApp());

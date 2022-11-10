@@ -18,9 +18,8 @@ class ProfilesCubit extends Cubit<ProfilesState> {
       return;
     }
 
-    final res =
+    final data =
         await supabase.from('profiles').select().match({'id': userId}).single();
-    final data = res.data as Map<String, dynamic>?;
 
     if (data == null) {
       return;

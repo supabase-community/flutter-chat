@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:my_chat_app/pages/login_page.dart';
 import 'package:my_chat_app/pages/rooms_page.dart';
@@ -28,6 +30,31 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _usernameController = TextEditingController();
 
+  late final StreamSubscription<AuthState> _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+
+    bool haveNavigated = false;
+    // Listen to auth state to redirect user when the user clicks on confirmation link
+    _authSubscription = supabase.auth.onAuthStateChange.listen((data) {
+      final session = data.session;
+      if (session != null && !haveNavigated) {
+        haveNavigated = true;
+        Navigator.of(context).pushReplacement(RoomsPage.route());
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    // Dispose subscription when no longer needed
+    _authSubscription.cancel();
+  }
+
   Future<void> _signUp() async {
     final isValid = _formKey.currentState!.validate();
     if (!isValid) {
@@ -37,15 +64,18 @@ class _RegisterPageState extends State<RegisterPage> {
     final password = _passwordController.text;
     final username = _usernameController.text;
     try {
-      final res = await supabase.auth.signUp(
+      await supabase.auth.signUp(
         email: email,
         password: password,
         data: {'username': username},
+        emailRedirectTo: 'io.supabase.chat://login',
       );
-      Navigator.of(context).push(RoomsPage.route());
+      context.showSnackBar(
+          message: 'Please check your inbox for confirmation email.');
     } on AuthException catch (error) {
       context.showErrorSnackBar(message: error.message);
-    } catch (_) {
+    } catch (error) {
+      debugPrint(error.toString());
       context.showErrorSnackBar(message: unexpectedErrorMessage);
     }
   }

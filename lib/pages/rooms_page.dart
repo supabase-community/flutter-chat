@@ -5,6 +5,7 @@ import 'package:my_chat_app/cubits/profiles/profiles_cubit.dart';
 import 'package:my_chat_app/cubits/rooms/rooms_cubit.dart';
 import 'package:my_chat_app/models/profile.dart';
 import 'package:my_chat_app/pages/chat_page.dart';
+import 'package:my_chat_app/pages/register_page.dart';
 import 'package:my_chat_app/utils/constants.dart';
 import 'package:my_chat_app/utils/messages_provider.dart';
 import 'package:timeago/timeago.dart';
@@ -29,6 +30,18 @@ class RoomsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Rooms'),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              await supabase.auth.signOut();
+              Navigator.of(context).pushAndRemoveUntil(
+                RegisterPage.route(),
+                (route) => false,
+              );
+            },
+            child: const Text('Logout'),
+          ),
+        ],
       ),
       body: BlocBuilder<RoomCubit, RoomState>(
         builder: (context, state) {
