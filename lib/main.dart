@@ -26,6 +26,7 @@ class MyApp extends StatelessWidget {
       create: (context) => ProfilesCubit(),
       child: MaterialApp(
         title: 'SupaChat',
+        debugShowCheckedModeBanner: false,
         theme: appTheme,
         home: const SplashPage(),
       ),
