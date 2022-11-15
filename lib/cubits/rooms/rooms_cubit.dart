@@ -56,7 +56,8 @@ class RoomCubit extends Cubit<RoomState> {
 
     /// Get realtime updates on rooms that the user is in
     _rawRoomsSubscription = supabase.from('room_participants').stream(
-        primaryKey: ['room_id', 'profile_id']).listen((participantMaps) async {
+      primaryKey: ['room_id', 'profile_id'],
+    ).listen((participantMaps) async {
       if (participantMaps.isEmpty) {
         emit(RoomsEmpty(newUsers: _newUsers));
         return;
