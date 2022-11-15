@@ -7,7 +7,6 @@ import 'package:my_chat_app/models/profile.dart';
 import 'package:my_chat_app/pages/chat_page.dart';
 import 'package:my_chat_app/pages/register_page.dart';
 import 'package:my_chat_app/utils/constants.dart';
-import 'package:my_chat_app/utils/messages_provider.dart';
 import 'package:timeago/timeago.dart';
 
 /// Displays the list of chat threads
@@ -15,11 +14,9 @@ class RoomsPage extends StatelessWidget {
   const RoomsPage({Key? key}) : super(key: key);
 
   static Route<void> route() {
-    final messageProvider = MessagesProvider();
     return MaterialPageRoute(
       builder: (context) => BlocProvider<RoomCubit>(
-        create: (context) => RoomCubit(messagesProvider: messageProvider)
-          ..initializeRooms(context),
+        create: (context) => RoomCubit()..initializeRooms(context),
         child: const RoomsPage(),
       ),
     );

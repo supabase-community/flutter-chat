@@ -4,7 +4,6 @@ import 'package:my_chat_app/components/user_avatar.dart';
 import 'package:my_chat_app/cubits/messages/messages_cubit.dart';
 import 'package:my_chat_app/models/message.dart';
 import 'package:my_chat_app/utils/constants.dart';
-import 'package:my_chat_app/utils/messages_provider.dart';
 import 'package:timeago/timeago.dart';
 
 /// Page to chat with someone.
@@ -14,11 +13,9 @@ class ChatPage extends StatelessWidget {
   const ChatPage({Key? key}) : super(key: key);
 
   static Route<void> route(String roomId) {
-    final messagesProvider = MessagesProvider();
     return MaterialPageRoute(
       builder: (context) => BlocProvider<MessagesCubit>(
-        create: (context) => MessagesCubit(messagesProvider: messagesProvider)
-          ..setMessagesListener(roomId),
+        create: (context) => MessagesCubit()..setMessagesListener(roomId),
         child: const ChatPage(),
       ),
     );

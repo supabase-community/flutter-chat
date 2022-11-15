@@ -7,16 +7,11 @@ import 'package:my_chat_app/models/profile.dart';
 import 'package:my_chat_app/models/message.dart';
 import 'package:my_chat_app/models/room.dart';
 import 'package:my_chat_app/utils/constants.dart';
-import 'package:my_chat_app/utils/messages_provider.dart';
 
 part 'rooms_state.dart';
 
 class RoomCubit extends Cubit<RoomState> {
-  RoomCubit({required MessagesProvider messagesProvider})
-      : _messagesProvider = messagesProvider,
-        super(RoomsLoading());
-
-  final MessagesProvider _messagesProvider;
+  RoomCubit() : super(RoomsLoading());
 
   final Map<String, StreamSubscription<Message?>> _messageSubscriptions = {};
 
@@ -85,28 +80,39 @@ class RoomCubit extends Cubit<RoomState> {
     required BuildContext context,
     required String roomId,
   }) {
-    _messageSubscriptions[roomId] = _messagesProvider
-        .subscribe(roomId)
-        .map((messages) => messages.isEmpty ? null : messages.first)
+    _messageSubscriptions[roomId] = supabase
+        .from('messages')
+        .stream(primaryKey: ['id'])
+        .eq('room_id', roomId)
+        .order('created_at')
+        .limit(1)
+        .map<Message?>(
+          (data) => data.isEmpty
+              ? null
+              : Message.fromMap(
+                  map: data.first,
+                  myUserId: _myUserId,
+                ),
+        )
         .listen((message) {
-      final index = _rooms.indexWhere((room) => room.id == roomId);
-      _rooms[index] = _rooms[index].copyWith(lastMessage: message);
-      _rooms.sort((a, b) {
-        /// Sort according to the last message
-        /// Use the room createdAt when last message is not available
-        final aTimeStamp =
-            a.lastMessage != null ? a.lastMessage!.createdAt : a.createdAt;
-        final bTimeStamp =
-            b.lastMessage != null ? b.lastMessage!.createdAt : b.createdAt;
-        return bTimeStamp.compareTo(aTimeStamp);
-      });
-      if (!isClosed) {
-        emit(RoomsLoaded(
-          newUsers: _newUsers,
-          rooms: _rooms,
-        ));
-      }
-    });
+          final index = _rooms.indexWhere((room) => room.id == roomId);
+          _rooms[index] = _rooms[index].copyWith(lastMessage: message);
+          _rooms.sort((a, b) {
+            /// Sort according to the last message
+            /// Use the room createdAt when last message is not available
+            final aTimeStamp =
+                a.lastMessage != null ? a.lastMessage!.createdAt : a.createdAt;
+            final bTimeStamp =
+                b.lastMessage != null ? b.lastMessage!.createdAt : b.createdAt;
+            return bTimeStamp.compareTo(aTimeStamp);
+          });
+          if (!isClosed) {
+            emit(RoomsLoaded(
+              newUsers: _newUsers,
+              rooms: _rooms,
+            ));
+          }
+        });
   }
 
   /// Creates or returns an existing roomID of both participants
@@ -120,7 +126,6 @@ class RoomCubit extends Cubit<RoomState> {
   @override
   Future<void> close() {
     _rawRoomsSubscription?.cancel();
-    _messagesProvider.clear();
     return super.close();
   }
 }
