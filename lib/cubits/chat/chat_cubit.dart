@@ -5,7 +5,7 @@ import 'package:meta/meta.dart';
 import 'package:my_chat_app/models/message.dart';
 import 'package:my_chat_app/utils/constants.dart';
 
-part 'messages_state.dart';
+part 'chat_state.dart';
 
 class MessagesCubit extends Cubit<MessagesState> {
   MessagesCubit() : super(MessagesInitial());

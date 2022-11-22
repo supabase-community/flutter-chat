@@ -112,10 +112,6 @@ create policy "Users can view messages on rooms they are in." on public.messages
 create policy "Users can insert messages on rooms they are in." on public.messages for insert with check (is_room_participant(room_id) and profile_id = auth.uid());
 
 
--- *** Views and functions ***
-
-
-
 -- Creates a new room with the user and another user in it.
 -- Will return the room_id of the created room
 -- Will return a room_id if there were already a room with those participants
