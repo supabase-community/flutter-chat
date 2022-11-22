@@ -7,8 +7,8 @@ import 'package:my_chat_app/utils/constants.dart';
 
 part 'chat_state.dart';
 
-class MessagesCubit extends Cubit<MessagesState> {
-  MessagesCubit() : super(MessagesInitial());
+class ChatCubit extends Cubit<ChatState> {
+  ChatCubit() : super(ChatInitial());
 
   StreamSubscription<List<Message>>? _messagesSubscription;
   List<Message> _messages = [];
@@ -35,9 +35,9 @@ class MessagesCubit extends Cubit<MessagesState> {
         .listen((messages) {
           _messages = messages;
           if (_messages.isEmpty) {
-            emit(MessagesEmpty());
+            emit(ChatEmpty());
           } else {
-            emit(MessagesLoaded(_messages));
+            emit(ChatLoaded(_messages));
           }
         });
   }
@@ -53,14 +53,14 @@ class MessagesCubit extends Cubit<MessagesState> {
       isMine: true,
     );
     _messages.insert(0, message);
-    emit(MessagesLoaded(_messages));
+    emit(ChatLoaded(_messages));
 
     try {
       await supabase.from('messages').insert(message.toMap());
     } catch (_) {
-      emit(MessagesError('Error submitting message.'));
+      emit(ChatError('Error submitting message.'));
       _messages.removeWhere((message) => message.id == 'new');
-      emit(MessagesLoaded(_messages));
+      emit(ChatLoaded(_messages));
     }
   }
 

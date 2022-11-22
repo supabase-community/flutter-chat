@@ -15,8 +15,8 @@ class ChatPage extends StatelessWidget {
 
   static Route<void> route(String roomId) {
     return MaterialPageRoute(
-      builder: (context) => BlocProvider<MessagesCubit>(
-        create: (context) => MessagesCubit()..setMessagesListener(roomId),
+      builder: (context) => BlocProvider<ChatCubit>(
+        create: (context) => ChatCubit()..setMessagesListener(roomId),
         child: const ChatPage(),
       ),
     );
@@ -26,16 +26,16 @@ class ChatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Chat')),
-      body: BlocConsumer<MessagesCubit, MessagesState>(
+      body: BlocConsumer<ChatCubit, ChatState>(
         listener: (context, state) {
-          if (state is MessagesError) {
+          if (state is ChatError) {
             context.showErrorSnackBar(message: state.message);
           }
         },
         builder: (context, state) {
-          if (state is MessagesInitial) {
+          if (state is ChatInitial) {
             return preloader;
-          } else if (state is MessagesLoaded) {
+          } else if (state is ChatLoaded) {
             final messages = state.messages;
             return Column(
               children: [
@@ -53,7 +53,7 @@ class ChatPage extends StatelessWidget {
                 const _MessageBar(),
               ],
             );
-          } else if (state is MessagesEmpty) {
+          } else if (state is ChatEmpty) {
             return Column(
               children: const [
                 Expanded(
@@ -64,7 +64,7 @@ class ChatPage extends StatelessWidget {
                 _MessageBar(),
               ],
             );
-          } else if (state is MessagesError) {
+          } else if (state is ChatError) {
             return Center(child: Text(state.message));
           }
           throw UnimplementedError();
@@ -141,7 +141,7 @@ class _MessageBarState extends State<_MessageBar> {
     if (text.isEmpty) {
       return;
     }
-    BlocProvider.of<MessagesCubit>(context).sendMessage(text);
+    BlocProvider.of<ChatCubit>(context).sendMessage(text);
     _textController.clear();
   }
 }
