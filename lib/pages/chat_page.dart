@@ -101,6 +101,16 @@ class _ChatPageState extends State<ChatPage> {
                 const _MessageBar(),
               ],
             );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: formPadding,
+                child: Text(
+                  'Could not load messages.\n${snapshot.error}',
+                  textAlign: .center,
+                ),
+              ),
+            );
           } else {
             return preloader;
           }
