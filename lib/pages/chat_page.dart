@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat/models/message.dart';
 import 'package:flutter_chat/models/profile.dart';
 import 'package:flutter_chat/utils/constants.dart';
+import 'package:flutter_chat/utils/cover_resize_image.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart';
@@ -12,6 +13,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 const _attachmentsBucket = 'attachments';
 const _maxAttachmentBytes = 10 * 1024 * 1024;
+const _signedUrlLifetime = Duration(hours: 1);
+const _imageSize = 200.0;
 
 /// Page to chat with someone.
 ///
@@ -26,38 +29,207 @@ class const ChatPage({super.key}) extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  late final Stream<List<Message>> _messagesStream;
-  final Map<String, Profile> _profileCache = {};
+  static const _pageSize = 20;
+
+  final Map<String, Message> _messages = {};
+  final Map<String, Profile> _profiles = {};
+  final Set<String> _requestedProfileIds = {};
+  final Map<String, ({Future<String> url, DateTime expiresAt})> _signedUrls =
+      {};
+
+  /// The loaded messages, newest first.
+  List<Message> _sortedMessages = [];
+
+  /// The position of every message in [_sortedMessages], by message id.
+  Map<String, int> _messageIndexes = {};
+  final _scrollController = ScrollController();
+  late final StreamSubscription<List<Message>> _subscription;
+  late final String _myUserId;
+  var _hasReceivedMessages = false;
+  var _hasOlderMessages = true;
+  var _isLoadingOlderMessages = false;
+  var _hasOlderMessagesError = false;
+  Object? _error;
 
   @override
   void initState() {
-    final myUserId = supabase.auth.currentUser!.id;
-    _messagesStream = supabase
+    super.initState();
+    _myUserId = supabase.auth.currentUser!.id;
+    _scrollController.addListener(_loadOlderMessagesIfNeeded);
+    _subscription = supabase
         .from('messages')
         .stream(primaryKey: ['id'])
         .order('created_at')
+        .limit(_pageSize)
         .map(
           (maps) => maps
-              .map((map) => Message.fromMap(map: map, myUserId: myUserId))
+              .map((map) => Message.fromMap(map: map, myUserId: _myUserId))
               .toList(),
-        );
-    super.initState();
+        )
+        .listen(_onLatestMessages, onError: _onError);
   }
 
-  Future<void> _loadProfileCache(String profileId) async {
-    if (_profileCache[profileId] != null) {
+  @override
+  void dispose() {
+    unawaited(_subscription.cancel());
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onLatestMessages(List<Message> messages) {
+    // After a reconnect the latest page can skip past the loaded messages,
+    // so start over from it instead of leaving a gap.
+    final skipsLoadedMessages =
+        messages.length == _pageSize &&
+        !messages.any((message) => _messages.containsKey(message.id));
+    setState(() {
+      _error = null;
+      if (!_hasReceivedMessages || skipsLoadedMessages) {
+        _messages.clear();
+        _sortedMessages = [];
+        _hasOlderMessages = messages.length == _pageSize;
+        _hasReceivedMessages = true;
+      }
+      _addMessages(messages);
+    });
+    _scheduleOlderMessagesCheck();
+  }
+
+  void _onError(Object error) {
+    setState(() => _error = error);
+  }
+
+  void _addMessages(List<Message> messages) {
+    for (final message in messages) {
+      _messages[message.id] = message;
+    }
+    _sortedMessages = _messages.values.toList()
+      ..sort(
+        (a, b) => switch (b.createdAt.compareTo(a.createdAt)) {
+          0 => b.id.compareTo(a.id),
+          final order => order,
+        },
+      );
+    _messageIndexes = {
+      for (final (index, message) in _sortedMessages.indexed) message.id: index,
+    };
+    unawaited(_loadProfiles(messages));
+  }
+
+  /// Loads the page before the oldest loaded message once the list is
+  /// scrolled close to its top, or when the loaded messages do not fill it.
+  void _loadOlderMessagesIfNeeded() {
+    if (!_scrollController.hasClients) {
       return;
     }
-    final data = await supabase
-        .from('profiles')
-        .select()
-        .eq('id', profileId)
-        .single();
-    final profile = Profile.fromMap(data);
-    if (!mounted) return;
-    setState(() {
-      _profileCache[profileId] = profile;
-    });
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      unawaited(_loadOlderMessages());
+    }
+  }
+
+  void _scheduleOlderMessagesCheck() {
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _loadOlderMessagesIfNeeded(),
+    );
+  }
+
+  Future<void> _loadOlderMessages() async {
+    if (_isLoadingOlderMessages ||
+        _hasOlderMessagesError ||
+        !_hasOlderMessages ||
+        _messages.isEmpty) {
+      return;
+    }
+    setState(() => _isLoadingOlderMessages = true);
+    try {
+      // Messages can share a timestamp, so the page continues with the ones at
+      // the oldest loaded timestamp that are not loaded yet.
+      final oldest = _sortedMessages.last.createdAt;
+      final loadedAtOldest = _sortedMessages.reversed
+          .takeWhile((message) => message.createdAt == oldest)
+          .map((message) => message.id)
+          .join(',');
+      final createdAt = oldest.toUtc().toIso8601String();
+      final data = await supabase
+          .from('messages')
+          .select()
+          .or(
+            'created_at.lt.$createdAt,'
+            'and(created_at.eq.$createdAt,id.not.in.($loadedAtOldest))',
+          )
+          .order('created_at')
+          .order('id')
+          .limit(_pageSize);
+      if (!mounted) return;
+      setState(() {
+        _addMessages([
+          for (final map in data)
+            Message.fromMap(map: map, myUserId: _myUserId),
+        ]);
+        _hasOlderMessages = data.length == _pageSize;
+      });
+      _scheduleOlderMessagesCheck();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _hasOlderMessagesError = true);
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingOlderMessages = false);
+      }
+    }
+  }
+
+  void _retryOlderMessages() {
+    setState(() => _hasOlderMessagesError = false);
+    unawaited(_loadOlderMessages());
+  }
+
+  /// Fetches the profiles of the senders of [messages] that are not loaded
+  /// or requested yet, in a single request.
+  Future<void> _loadProfiles(List<Message> messages) async {
+    final profileIds = {
+      for (final message in messages) message.profileId,
+    }.difference(_requestedProfileIds);
+    if (profileIds.isEmpty) {
+      return;
+    }
+    _requestedProfileIds.addAll(profileIds);
+    try {
+      final data = await supabase
+          .from('profiles')
+          .select()
+          .inFilter('id', profileIds.toList());
+      if (!mounted) return;
+      setState(() {
+        for (final map in data) {
+          final profile = Profile.fromMap(map);
+          _profiles[profile.id] = profile;
+        }
+      });
+    } catch (_) {
+      _requestedProfileIds.removeAll(profileIds);
+    }
+  }
+
+  /// A signed URL for the attachment at [path], reused until shortly before
+  /// it expires so that the image cache can hit.
+  Future<String> _signedUrlFor(String path) {
+    final cached = _signedUrls[path];
+    if (cached != null && DateTime.now().isBefore(cached.expiresAt)) {
+      return cached.url;
+    }
+    final url = supabase.storage
+        .from(_attachmentsBucket)
+        .createSignedUrl(path, _signedUrlLifetime.inSeconds);
+    _signedUrls[path] = (
+      url: url,
+      expiresAt: DateTime.now().add(
+        _signedUrlLifetime - const Duration(minutes: 5),
+      ),
+    );
+    url.then<void>((_) {}, onError: (_) => _signedUrls.remove(path)).ignore();
+    return url;
   }
 
   @override
@@ -73,54 +245,89 @@ class _ChatPageState extends State<ChatPage> {
           ),
         ],
       ),
-      body: StreamBuilder<List<Message>>(
-        stream: _messagesStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final messages = snapshot.data!;
-            return Column(
-              children: [
-                Expanded(
-                  child: messages.isEmpty
-                      ? const Center(
-                          child: Text('Start your conversation now :)'),
-                        )
-                      : ListView.builder(
-                          reverse: true,
-                          itemCount: messages.length,
-                          itemBuilder: (context, index) {
-                            final message = messages[index];
+      body: switch ((_hasReceivedMessages, _error)) {
+        (_, final error?) => Center(
+          child: Padding(
+            padding: formPadding,
+            child: Text(
+              'Could not load messages.\n$error',
+              textAlign: .center,
+            ),
+          ),
+        ),
+        (false, _) => preloader,
+        (true, _) => Column(
+          children: [
+            Expanded(
+              child: _messages.isEmpty
+                  ? const Center(
+                      child: Text('Start your conversation now :)'),
+                    )
+                  : _MessageList(
+                      messages: _sortedMessages,
+                      messageIndexes: _messageIndexes,
+                      profiles: _profiles,
+                      hasOlderMessages: _hasOlderMessages,
+                      onRetryOlderMessages: _hasOlderMessagesError
+                          ? _retryOlderMessages
+                          : null,
+                      scrollController: _scrollController,
+                      signedUrlFor: _signedUrlFor,
+                    ),
+            ),
+            const _MessageBar(),
+          ],
+        ),
+      },
+    );
+  }
+}
 
-                            /// I know it's not good to include code that is not related
-                            /// to rendering the widget inside build method, but for
-                            /// creating an app quick and dirty, it's fine 😂
-                            _loadProfileCache(message.profileId);
-
-                            return _ChatBubble(
-                              message: message,
-                              profile: _profileCache[message.profileId],
-                            );
-                          },
-                        ),
-                ),
-                const _MessageBar(),
-              ],
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: formPadding,
-                child: Text(
-                  'Could not load messages.\n${snapshot.error}',
-                  textAlign: .center,
-                ),
-              ),
-            );
-          } else {
-            return preloader;
-          }
-        },
-      ),
+class const _MessageList({
+  required final List<Message> messages,
+  required final Map<String, int> messageIndexes,
+  required final Map<String, Profile> profiles,
+  required final bool hasOlderMessages,
+  required final VoidCallback? onRetryOlderMessages,
+  required final ScrollController scrollController,
+  required final Future<String> Function(String path) signedUrlFor,
+}) extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      controller: scrollController,
+      reverse: true,
+      itemCount: messages.length + (hasOlderMessages ? 1 : 0),
+      // Keeps the state of every bubble with its message when new messages
+      // shift the positions in the list.
+      findChildIndexCallback: (key) =>
+          key is ValueKey<String> ? messageIndexes[key.value] : null,
+      itemBuilder: (context, index) {
+        if (index == messages.length) {
+          return Padding(
+            padding: const .all(16),
+            child: onRetryOlderMessages == null
+                ? preloader
+                : Center(
+                    child: TextButton.icon(
+                      onPressed: onRetryOlderMessages,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Could not load older messages, retry'),
+                    ),
+                  ),
+          );
+        }
+        final message = messages[index];
+        final attachmentPath = message.attachmentPath;
+        return _ChatBubble(
+          key: ValueKey(message.id),
+          message: message,
+          profile: profiles[message.profileId],
+          attachmentUrl: attachmentPath == null
+              ? null
+              : signedUrlFor(attachmentPath),
+        );
+      },
     );
   }
 }
@@ -251,8 +458,10 @@ class _MessageBarState extends State<_MessageBar> {
 }
 
 class const _ChatBubble({
+  super.key,
   required final Message message,
   required final Profile? profile,
+  required final Future<String>? attachmentUrl,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -278,7 +487,8 @@ class const _ChatBubble({
             mainAxisSize: .min,
             spacing: 8,
             children: [
-              if (message.attachmentPath != null) _Attachment(message: message),
+              if (attachmentUrl case final url?)
+                _Attachment(message: message, url: url),
               if (message.content.isNotEmpty) Text(message.content),
             ],
           ),
@@ -298,54 +508,69 @@ class const _ChatBubble({
   }
 }
 
-class const _Attachment({required final Message message})
-    extends StatefulWidget {
-  @override
-  State<_Attachment> createState() => _AttachmentState();
-}
-
-class _AttachmentState extends State<_Attachment> {
-  late final Future<String> _signedUrl = supabase.storage
-      .from(_attachmentsBucket)
-      .createSignedUrl(widget.message.attachmentPath!, 60 * 60);
-
-  Future<void> _open() async {
-    final opened = await launchUrl(
-      Uri.parse(await _signedUrl),
-      mode: .externalApplication,
-    );
-    if (!opened && mounted) {
+class const _Attachment({
+  required final Message message,
+  required final Future<String> url,
+}) extends StatelessWidget {
+  Future<void> _open(BuildContext context) async {
+    final opened = await url
+        .then((url) => launchUrl(Uri.parse(url), mode: .externalApplication))
+        .catchError((Object _) => false);
+    if (!opened && context.mounted) {
       context.showErrorSnackBar(message: 'Could not open the file.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final message = widget.message;
-    return InkWell(
-      onTap: _open,
-      child: message.hasImageAttachment
-          ? FutureBuilder(
-              future: _signedUrl,
-              builder: (context, snapshot) => ClipRRect(
-                borderRadius: .circular(4),
-                child: SizedBox(
-                  width: 200,
-                  height: 200,
-                  child: snapshot.hasData
-                      ? Image.network(snapshot.data!, fit: .cover)
-                      : preloader,
+    final pixelSize = (_imageSize * MediaQuery.devicePixelRatioOf(context))
+        .round();
+    // The ink is painted on this transparent material, above the colored
+    // bubble instead of underneath it.
+    return Material(
+      type: .transparency,
+      child: InkWell(
+        onTap: () => _open(context),
+        child: message.hasImageAttachment
+            ? FutureBuilder(
+                future: url,
+                builder: (context, snapshot) => ClipRRect(
+                  borderRadius: .circular(4),
+                  child: SizedBox.square(
+                    dimension: _imageSize,
+                    child: switch (snapshot) {
+                      AsyncSnapshot(hasData: true, :final data?) => Image(
+                        image: CoverResizeImage(
+                          NetworkImage(data),
+                          width: pixelSize,
+                          height: pixelSize,
+                        ),
+                        fit: .cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const _BrokenImage(),
+                      ),
+                      AsyncSnapshot(hasError: true) => const _BrokenImage(),
+                      _ => preloader,
+                    },
+                  ),
                 ),
+              )
+            : Row(
+                mainAxisSize: .min,
+                spacing: 8,
+                children: [
+                  const Icon(Icons.insert_drive_file_outlined),
+                  Flexible(child: Text(message.attachmentName ?? 'File')),
+                ],
               ),
-            )
-          : Row(
-              mainAxisSize: .min,
-              spacing: 8,
-              children: [
-                const Icon(Icons.insert_drive_file_outlined),
-                Flexible(child: Text(message.attachmentName ?? 'File')),
-              ],
-            ),
+      ),
     );
+  }
+}
+
+class const _BrokenImage() extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Icon(Icons.broken_image_outlined, size: 48));
   }
 }
