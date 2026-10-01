@@ -48,6 +48,7 @@ class _ChatPageState extends State<ChatPage> {
   var _hasReceivedMessages = false;
   var _hasOlderMessages = true;
   var _isLoadingOlderMessages = false;
+  var _hasOlderMessagesError = false;
   Object? _error;
 
   @override
@@ -82,6 +83,7 @@ class _ChatPageState extends State<ChatPage> {
         messages.length == _pageSize &&
         !messages.any((message) => _messages.containsKey(message.id));
     setState(() {
+      _error = null;
       if (!_hasReceivedMessages || skipsLoadedMessages) {
         _messages.clear();
         _sortedMessages = [];
@@ -102,7 +104,12 @@ class _ChatPageState extends State<ChatPage> {
       _messages[message.id] = message;
     }
     _sortedMessages = _messages.values.toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      ..sort(
+        (a, b) => switch (b.createdAt.compareTo(a.createdAt)) {
+          0 => b.id.compareTo(a.id),
+          final order => order,
+        },
+      );
     _messageIndexes = {
       for (final (index, message) in _sortedMessages.indexed) message.id: index,
     };
@@ -128,17 +135,31 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _loadOlderMessages() async {
-    if (_isLoadingOlderMessages || !_hasOlderMessages || _messages.isEmpty) {
+    if (_isLoadingOlderMessages ||
+        _hasOlderMessagesError ||
+        !_hasOlderMessages ||
+        _messages.isEmpty) {
       return;
     }
     setState(() => _isLoadingOlderMessages = true);
     try {
+      // Messages can share a timestamp, so the page continues with the ones at
+      // the oldest loaded timestamp that are not loaded yet.
       final oldest = _sortedMessages.last.createdAt;
+      final loadedAtOldest = _sortedMessages.reversed
+          .takeWhile((message) => message.createdAt == oldest)
+          .map((message) => message.id)
+          .join(',');
+      final createdAt = oldest.toUtc().toIso8601String();
       final data = await supabase
           .from('messages')
           .select()
-          .lt('created_at', oldest.toIso8601String())
+          .or(
+            'created_at.lt.$createdAt,'
+            'and(created_at.eq.$createdAt,id.not.in.($loadedAtOldest))',
+          )
           .order('created_at')
+          .order('id')
           .limit(_pageSize);
       if (!mounted) return;
       setState(() {
@@ -149,17 +170,19 @@ class _ChatPageState extends State<ChatPage> {
         _hasOlderMessages = data.length == _pageSize;
       });
       _scheduleOlderMessagesCheck();
-    } on PostgrestException catch (error) {
-      if (!mounted) return;
-      context.showErrorSnackBar(message: error.message);
     } catch (_) {
       if (!mounted) return;
-      context.showErrorSnackBar(message: unexpectedErrorMessage);
+      setState(() => _hasOlderMessagesError = true);
     } finally {
       if (mounted) {
         setState(() => _isLoadingOlderMessages = false);
       }
     }
+  }
+
+  void _retryOlderMessages() {
+    setState(() => _hasOlderMessagesError = false);
+    unawaited(_loadOlderMessages());
   }
 
   /// Fetches the profiles of the senders of [messages] that are not loaded
@@ -245,6 +268,9 @@ class _ChatPageState extends State<ChatPage> {
                       messageIndexes: _messageIndexes,
                       profiles: _profiles,
                       hasOlderMessages: _hasOlderMessages,
+                      onRetryOlderMessages: _hasOlderMessagesError
+                          ? _retryOlderMessages
+                          : null,
                       scrollController: _scrollController,
                       signedUrlFor: _signedUrlFor,
                     ),
@@ -262,6 +288,7 @@ class const _MessageList({
   required final Map<String, int> messageIndexes,
   required final Map<String, Profile> profiles,
   required final bool hasOlderMessages,
+  required final VoidCallback? onRetryOlderMessages,
   required final ScrollController scrollController,
   required final Future<String> Function(String path) signedUrlFor,
 }) extends StatelessWidget {
@@ -277,7 +304,18 @@ class const _MessageList({
           key is ValueKey<String> ? messageIndexes[key.value] : null,
       itemBuilder: (context, index) {
         if (index == messages.length) {
-          return const Padding(padding: .all(16), child: preloader);
+          return Padding(
+            padding: const .all(16),
+            child: onRetryOlderMessages == null
+                ? preloader
+                : Center(
+                    child: TextButton.icon(
+                      onPressed: onRetryOlderMessages,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Could not load older messages, retry'),
+                    ),
+                  ),
+          );
         }
         final message = messages[index];
         final attachmentPath = message.attachmentPath;
@@ -475,10 +513,9 @@ class const _Attachment({
   required final Future<String> url,
 }) extends StatelessWidget {
   Future<void> _open(BuildContext context) async {
-    final opened = await launchUrl(
-      Uri.parse(await url),
-      mode: .externalApplication,
-    );
+    final opened = await url
+        .then((url) => launchUrl(Uri.parse(url), mode: .externalApplication))
+        .catchError((Object _) => false);
     if (!opened && context.mounted) {
       context.showErrorSnackBar(message: 'Could not open the file.');
     }
@@ -488,36 +525,52 @@ class const _Attachment({
   Widget build(BuildContext context) {
     final pixelSize = (_imageSize * MediaQuery.devicePixelRatioOf(context))
         .round();
-    return InkWell(
-      onTap: () => _open(context),
-      child: message.hasImageAttachment
-          ? FutureBuilder(
-              future: url,
-              builder: (context, snapshot) => ClipRRect(
-                borderRadius: .circular(4),
-                child: SizedBox.square(
-                  dimension: _imageSize,
-                  child: snapshot.hasData
-                      ? Image(
-                          image: CoverResizeImage(
-                            NetworkImage(snapshot.data!),
-                            width: pixelSize,
-                            height: pixelSize,
-                          ),
-                          fit: .cover,
-                        )
-                      : preloader,
+    // The ink is painted on this transparent material, above the colored
+    // bubble instead of underneath it.
+    return Material(
+      type: .transparency,
+      child: InkWell(
+        onTap: () => _open(context),
+        child: message.hasImageAttachment
+            ? FutureBuilder(
+                future: url,
+                builder: (context, snapshot) => ClipRRect(
+                  borderRadius: .circular(4),
+                  child: SizedBox.square(
+                    dimension: _imageSize,
+                    child: switch (snapshot) {
+                      AsyncSnapshot(hasData: true, :final data?) => Image(
+                        image: CoverResizeImage(
+                          NetworkImage(data),
+                          width: pixelSize,
+                          height: pixelSize,
+                        ),
+                        fit: .cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const _BrokenImage(),
+                      ),
+                      AsyncSnapshot(hasError: true) => const _BrokenImage(),
+                      _ => preloader,
+                    },
+                  ),
                 ),
+              )
+            : Row(
+                mainAxisSize: .min,
+                spacing: 8,
+                children: [
+                  const Icon(Icons.insert_drive_file_outlined),
+                  Flexible(child: Text(message.attachmentName ?? 'File')),
+                ],
               ),
-            )
-          : Row(
-              mainAxisSize: .min,
-              spacing: 8,
-              children: [
-                const Icon(Icons.insert_drive_file_outlined),
-                Flexible(child: Text(message.attachmentName ?? 'File')),
-              ],
-            ),
+      ),
     );
+  }
+}
+
+class const _BrokenImage() extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Icon(Icons.broken_image_outlined, size: 48));
   }
 }
