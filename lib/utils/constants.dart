@@ -5,8 +5,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final supabase = Supabase.instance.client;
 
 /// Simple preloader inside a Center widget
-const preloader =
-    Center(child: CircularProgressIndicator(color: Colors.orange));
+const preloader = Center(
+  child: CircularProgressIndicator(color: Colors.orange),
+);
 
 /// Simple sized box to space out form elements
 const formSpacer = SizedBox(width: 16, height: 16);
@@ -24,16 +25,11 @@ final appTheme = ThemeData.light().copyWith(
     elevation: 1,
     backgroundColor: Colors.white,
     iconTheme: IconThemeData(color: Colors.black),
-    titleTextStyle: TextStyle(
-      color: Colors.black,
-      fontSize: 18,
-    ),
+    titleTextStyle: TextStyle(color: Colors.black, fontSize: 18),
   ),
   primaryColor: Colors.orange,
   textButtonTheme: TextButtonThemeData(
-    style: TextButton.styleFrom(
-      foregroundColor: Colors.orange,
-    ),
+    style: TextButton.styleFrom(foregroundColor: Colors.orange),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
@@ -42,23 +38,15 @@ final appTheme = ThemeData.light().copyWith(
     ),
   ),
   inputDecorationTheme: InputDecorationTheme(
-    floatingLabelStyle: const TextStyle(
-      color: Colors.orange,
-    ),
+    floatingLabelStyle: const TextStyle(color: Colors.orange),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(
-        color: Colors.grey,
-        width: 2,
-      ),
+      borderSide: const BorderSide(color: Colors.grey, width: 2),
     ),
     focusColor: Colors.orange,
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(
-        color: Colors.orange,
-        width: 2,
-      ),
+      borderSide: const BorderSide(color: Colors.orange, width: 2),
     ),
   ),
 );
@@ -70,10 +58,9 @@ extension ShowSnackBar on BuildContext {
     required String message,
     Color backgroundColor = Colors.white,
   }) {
-    ScaffoldMessenger.of(this).showSnackBar(SnackBar(
-      content: Text(message),
-      backgroundColor: backgroundColor,
-    ));
+    ScaffoldMessenger.of(this).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: backgroundColor),
+    );
   }
 
   /// Displays a red snackbar indicating error

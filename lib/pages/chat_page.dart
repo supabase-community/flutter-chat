@@ -12,12 +12,10 @@ import 'package:timeago/timeago.dart';
 ///
 /// Displays chat bubbles as a ListView and TextField to enter new chat.
 class ChatPage extends StatefulWidget {
-  const ChatPage({Key? key}) : super(key: key);
+  const ChatPage({super.key});
 
   static Route<void> route() {
-    return MaterialPageRoute(
-      builder: (context) => const ChatPage(),
-    );
+    return MaterialPageRoute(builder: (context) => const ChatPage());
   }
 
   @override
@@ -35,9 +33,12 @@ class _ChatPageState extends State<ChatPage> {
         .from('messages')
         .stream(primaryKey: ['id'])
         .order('created_at')
-        .map((maps) => maps
-            .map((map) => Message.fromMap(map: map, myUserId: myUserId))
-            .toList());
+        .map(
+          (maps) =>
+              maps
+                  .map((map) => Message.fromMap(map: map, myUserId: myUserId))
+                  .toList(),
+        );
     super.initState();
   }
 
@@ -65,27 +66,28 @@ class _ChatPageState extends State<ChatPage> {
             return Column(
               children: [
                 Expanded(
-                  child: messages.isEmpty
-                      ? const Center(
-                          child: Text('Start your conversation now :)'),
-                        )
-                      : ListView.builder(
-                          reverse: true,
-                          itemCount: messages.length,
-                          itemBuilder: (context, index) {
-                            final message = messages[index];
+                  child:
+                      messages.isEmpty
+                          ? const Center(
+                            child: Text('Start your conversation now :)'),
+                          )
+                          : ListView.builder(
+                            reverse: true,
+                            itemCount: messages.length,
+                            itemBuilder: (context, index) {
+                              final message = messages[index];
 
-                            /// I know it's not good to include code that is not related
-                            /// to rendering the widget inside build method, but for
-                            /// creating an app quick and dirty, it's fine 😂
-                            _loadProfileCache(message.profileId);
+                              /// I know it's not good to include code that is not related
+                              /// to rendering the widget inside build method, but for
+                              /// creating an app quick and dirty, it's fine 😂
+                              _loadProfileCache(message.profileId);
 
-                            return _ChatBubble(
-                              message: message,
-                              profile: _profileCache[message.profileId],
-                            );
-                          },
-                        ),
+                              return _ChatBubble(
+                                message: message,
+                                profile: _profileCache[message.profileId],
+                              );
+                            },
+                          ),
                 ),
                 const _MessageBar(),
               ],
@@ -101,9 +103,7 @@ class _ChatPageState extends State<ChatPage> {
 
 /// Set of widget that contains TextField and Button to submit message
 class _MessageBar extends StatefulWidget {
-  const _MessageBar({
-    Key? key,
-  }) : super(key: key);
+  const _MessageBar();
 
   @override
   State<_MessageBar> createState() => _MessageBarState();
@@ -171,19 +171,17 @@ class _MessageBarState extends State<_MessageBar> {
         'content': text,
       });
     } on PostgrestException catch (error) {
+      if (!mounted) return;
       context.showErrorSnackBar(message: error.message);
     } catch (_) {
+      if (!mounted) return;
       context.showErrorSnackBar(message: unexpectedErrorMessage);
     }
   }
 }
 
 class _ChatBubble extends StatelessWidget {
-  const _ChatBubble({
-    Key? key,
-    required this.message,
-    required this.profile,
-  }) : super(key: key);
+  const _ChatBubble({required this.message, required this.profile});
 
   final Message message;
   final Profile? profile;
@@ -193,21 +191,20 @@ class _ChatBubble extends StatelessWidget {
     List<Widget> chatContents = [
       if (!message.isMine)
         CircleAvatar(
-          child: profile == null
-              ? preloader
-              : Text(profile!.username.substring(0, 2)),
+          child:
+              profile == null
+                  ? preloader
+                  : Text(profile!.username.substring(0, 2)),
         ),
       const SizedBox(width: 12),
       Flexible(
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 12,
-          ),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
           decoration: BoxDecoration(
-            color: message.isMine
-                ? Theme.of(context).primaryColor
-                : Colors.grey[300],
+            color:
+                message.isMine
+                    ? Theme.of(context).primaryColor
+                    : Colors.grey[300],
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(message.content),
