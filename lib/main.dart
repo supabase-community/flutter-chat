@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:my_chat_app/utils/constants.dart';
+import 'package:flutter_chat/pages/splash_page.dart';
+import 'package:flutter_chat/utils/constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:my_chat_app/pages/splash_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-    // TODO: Replace credentials with your own
-    url: 'SUPABASE_URL',
-    anonKey: 'SUPABASE_ANON_KEY',
+    url: const String.fromEnvironment('SUPABASE_URL'),
+    publishableKey: const String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY'),
   );
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

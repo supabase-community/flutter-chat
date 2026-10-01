@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:my_chat_app/pages/chat_page.dart';
-import 'package:my_chat_app/utils/constants.dart';
+import 'package:flutter_chat/pages/chat_page.dart';
+import 'package:flutter_chat/utils/constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   static Route<void> route() {
     return MaterialPageRoute(builder: (context) => const LoginPage());
   }
 
   @override
-  _LoginPageState createState() => _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
@@ -28,16 +28,20 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-      Navigator.of(context)
-          .pushAndRemoveUntil(ChatPage.route(), (route) => false);
+      if (!mounted) return;
+      Navigator.of(
+        context,
+      ).pushAndRemoveUntil(ChatPage.route(), (route) => false);
     } on AuthException catch (error) {
+      if (!mounted) return;
       context.showErrorSnackBar(message: error.message);
     } catch (_) {
+      if (!mounted) return;
       context.showErrorSnackBar(message: unexpectedErrorMessage);
     }
     if (mounted) {
       setState(() {
-        _isLoading = true;
+        _isLoading = false;
       });
     }
   }

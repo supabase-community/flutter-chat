@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:my_chat_app/pages/chat_page.dart';
-import 'package:my_chat_app/pages/login_page.dart';
-import 'package:my_chat_app/utils/constants.dart';
+import 'package:flutter_chat/pages/chat_page.dart';
+import 'package:flutter_chat/pages/login_page.dart';
+import 'package:flutter_chat/utils/constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key, required this.isRegistering}) : super(key: key);
+  const RegisterPage({super.key, required this.isRegistering});
 
   static Route<void> route({bool isRegistering = false}) {
     return MaterialPageRoute(
@@ -38,12 +38,19 @@ class _RegisterPageState extends State<RegisterPage> {
     final username = _usernameController.text;
     try {
       await supabase.auth.signUp(
-          email: email, password: password, data: {'username': username});
-      Navigator.of(context)
-          .pushAndRemoveUntil(ChatPage.route(), (route) => false);
+        email: email,
+        password: password,
+        data: {'username': username},
+      );
+      if (!mounted) return;
+      Navigator.of(
+        context,
+      ).pushAndRemoveUntil(ChatPage.route(), (route) => false);
     } on AuthException catch (error) {
+      if (!mounted) return;
       context.showErrorSnackBar(message: error.message);
-    } catch (error) {
+    } catch (_) {
+      if (!mounted) return;
       context.showErrorSnackBar(message: unexpectedErrorMessage);
     }
   }
@@ -51,9 +58,7 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Register'),
-      ),
+      appBar: AppBar(title: const Text('Register')),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -61,9 +66,7 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             TextFormField(
               controller: _emailController,
-              decoration: const InputDecoration(
-                label: Text('Email'),
-              ),
+              decoration: const InputDecoration(label: Text('Email')),
               validator: (val) {
                 if (val == null || val.isEmpty) {
                   return 'Required';
@@ -76,9 +79,7 @@ class _RegisterPageState extends State<RegisterPage> {
             TextFormField(
               controller: _passwordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                label: Text('Password'),
-              ),
+              decoration: const InputDecoration(label: Text('Password')),
               validator: (val) {
                 if (val == null || val.isEmpty) {
                   return 'Required';
@@ -92,9 +93,7 @@ class _RegisterPageState extends State<RegisterPage> {
             formSpacer,
             TextFormField(
               controller: _usernameController,
-              decoration: const InputDecoration(
-                label: Text('Username'),
-              ),
+              decoration: const InputDecoration(label: Text('Username')),
               validator: (val) {
                 if (val == null || val.isEmpty) {
                   return 'Required';
@@ -117,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 Navigator.of(context).push(LoginPage.route());
               },
               child: const Text('I already have an account'),
-            )
+            ),
           ],
         ),
       ),

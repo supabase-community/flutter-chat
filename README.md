@@ -4,6 +4,21 @@ Simple chat app to demonstrate the realtime capability of Supabase with Flutter.
 
 You can also find an example using [row level security](https://supabase.com/docs/guides/auth/row-level-security) to provide chat rooms to enable 1 to 1 chats on the [`with-auth` branch](https://github.com/supabase-community/flutter-chat/tree/with_auth). 
 
+## Running the app
+
+Create a `.env` file in the project root with your project's URL and publishable key, which you can find in your Supabase dashboard:
+
+```
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+```
+
+Then pass it to Flutter when running the app:
+
+```bash
+flutter run --dart-define-from-file=.env
+```
+
 ## SQL
 
 ```sql
