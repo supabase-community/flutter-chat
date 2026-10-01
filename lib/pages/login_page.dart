@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chat/pages/chat_page.dart';
 import 'package:flutter_chat/utils/constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-
+class const LoginPage({super.key}) extends StatefulWidget {
   static Route<void> route() {
     return MaterialPageRoute(builder: (context) => const LoginPage());
   }
@@ -28,10 +25,6 @@ class _LoginPageState extends State<LoginPage> {
         email: _emailController.text,
         password: _passwordController.text,
       );
-      if (!mounted) return;
-      Navigator.of(
-        context,
-      ).pushAndRemoveUntil(ChatPage.route(), (route) => false);
     } on AuthException catch (error) {
       if (!mounted) return;
       context.showErrorSnackBar(message: error.message);
@@ -63,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
           TextFormField(
             controller: _emailController,
             decoration: const InputDecoration(labelText: 'Email'),
-            keyboardType: TextInputType.emailAddress,
+            keyboardType: .emailAddress,
           ),
           formSpacer,
           TextFormField(

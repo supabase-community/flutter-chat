@@ -1,26 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chat/pages/chat_page.dart';
 import 'package:flutter_chat/pages/login_page.dart';
 import 'package:flutter_chat/utils/constants.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key, required this.isRegistering});
-
-  static Route<void> route({bool isRegistering = false}) {
-    return MaterialPageRoute(
-      builder: (context) => RegisterPage(isRegistering: isRegistering),
-    );
+class const RegisterPage({super.key}) extends StatefulWidget {
+  static Route<void> route() {
+    return MaterialPageRoute(builder: (context) => const RegisterPage());
   }
-
-  final bool isRegistering;
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final bool _isLoading = false;
+  bool _isLoading = false;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -36,16 +29,21 @@ class _RegisterPageState extends State<RegisterPage> {
     final email = _emailController.text;
     final password = _passwordController.text;
     final username = _usernameController.text;
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      await supabase.auth.signUp(
+      final response = await supabase.auth.signUp(
         email: email,
         password: password,
         data: {'username': username},
       );
       if (!mounted) return;
-      Navigator.of(
-        context,
-      ).pushAndRemoveUntil(ChatPage.route(), (route) => false);
+      if (response.session == null) {
+        context.showSnackBar(
+          message: 'Check your email to confirm your account, then sign in.',
+        );
+      }
     } on AuthException catch (error) {
       if (!mounted) return;
       context.showErrorSnackBar(message: error.message);
@@ -53,6 +51,19 @@ class _RegisterPageState extends State<RegisterPage> {
       if (!mounted) return;
       context.showErrorSnackBar(message: unexpectedErrorMessage);
     }
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _usernameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -73,7 +84,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 }
                 return null;
               },
-              keyboardType: TextInputType.emailAddress,
+              keyboardType: .emailAddress,
             ),
             formSpacer,
             TextFormField(

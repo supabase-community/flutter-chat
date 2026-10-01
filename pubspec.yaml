@@ -6,14 +6,15 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.7.0
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
   supabase_flutter: ^2.18.0
-  timeago: ^3.7.0
+  timeago: ^3.7.1
 
 dev_dependencies:
   flutter_test:
