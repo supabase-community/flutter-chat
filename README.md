@@ -11,6 +11,8 @@ You can also find an example using [row level security](https://supabase.com/doc
 
 The database schema lives in [`supabase/migrations`](supabase/migrations). It creates the `profiles` and `messages` tables, their row level security policies, the trigger that creates a profile on sign up, and adds `messages` to the realtime publication.
 
+It also creates a private `attachments` storage bucket for files sent in the chat, limited to 10 MiB per file. Signed in users can read every attachment, and can only upload into a folder named after their own user id. Images are shown inline, and other files open in the browser through a signed URL.
+
 ## Using a hosted project
 
 1. Create a project on the [Supabase dashboard](https://supabase.com/dashboard).

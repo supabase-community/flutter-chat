@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat/models/message.dart';
 import 'package:flutter_chat/models/profile.dart';
@@ -7,6 +8,10 @@ import 'package:flutter_chat/utils/constants.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timeago/timeago.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+const _attachmentsBucket = 'attachments';
+const _maxAttachmentBytes = 10 * 1024 * 1024;
 
 /// Page to chat with someone.
 ///
@@ -128,6 +133,7 @@ class const _MessageBar() extends StatefulWidget {
 
 class _MessageBarState extends State<_MessageBar> {
   final _textController = TextEditingController();
+  var _isUploading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -138,6 +144,13 @@ class _MessageBarState extends State<_MessageBar> {
           padding: const .all(8),
           child: Row(
             children: [
+              IconButton(
+                tooltip: 'Attach a file',
+                icon: _isUploading
+                    ? const SizedBox.square(dimension: 24, child: preloader)
+                    : const Icon(Icons.attach_file),
+                onPressed: _isUploading ? null : _sendAttachment,
+              ),
               Expanded(
                 child: TextFormField(
                   keyboardType: .text,
@@ -189,6 +202,52 @@ class _MessageBarState extends State<_MessageBar> {
       context.showErrorSnackBar(message: unexpectedErrorMessage);
     }
   }
+
+  Future<void> _sendAttachment() async {
+    final file = await FilePicker.pickFile();
+    if (file == null || !mounted) {
+      return;
+    }
+    final length = file.lengthSync() ?? await file.length();
+    if (length == null || length > _maxAttachmentBytes) {
+      if (!mounted) return;
+      context.showErrorSnackBar(message: 'Files can be at most 10 MiB.');
+      return;
+    }
+    setState(() => _isUploading = true);
+    final myUserId = supabase.auth.currentUser!.id;
+    final extension = file.extension;
+    final path = [
+      '$myUserId/${DateTime.now().microsecondsSinceEpoch}',
+      ?extension,
+    ].join('.');
+    final text = _textController.text;
+    try {
+      await supabase.storage
+          .from(_attachmentsBucket)
+          .uploadBinary(path, await file.readAsBytes());
+      await supabase.from('messages').insert({
+        'profile_id': myUserId,
+        'content': text,
+        'attachment_path': path,
+        'attachment_name': file.name,
+      });
+      _textController.clear();
+    } on StorageException catch (error) {
+      if (!mounted) return;
+      context.showErrorSnackBar(message: error.message);
+    } on PostgrestException catch (error) {
+      if (!mounted) return;
+      context.showErrorSnackBar(message: error.message);
+    } catch (_) {
+      if (!mounted) return;
+      context.showErrorSnackBar(message: unexpectedErrorMessage);
+    } finally {
+      if (mounted) {
+        setState(() => _isUploading = false);
+      }
+    }
+  }
 }
 
 class const _ChatBubble({
@@ -214,7 +273,15 @@ class const _ChatBubble({
                 : Colors.grey[300],
             borderRadius: .circular(8),
           ),
-          child: Text(message.content),
+          child: Column(
+            crossAxisAlignment: .start,
+            mainAxisSize: .min,
+            spacing: 8,
+            children: [
+              if (message.attachmentPath != null) _Attachment(message: message),
+              if (message.content.isNotEmpty) Text(message.content),
+            ],
+          ),
         ),
       ),
       const SizedBox(width: 12),
@@ -227,6 +294,58 @@ class const _ChatBubble({
         mainAxisAlignment: message.isMine ? .end : .start,
         children: message.isMine ? [...chatContents.reversed] : chatContents,
       ),
+    );
+  }
+}
+
+class const _Attachment({required final Message message})
+    extends StatefulWidget {
+  @override
+  State<_Attachment> createState() => _AttachmentState();
+}
+
+class _AttachmentState extends State<_Attachment> {
+  late final Future<String> _signedUrl = supabase.storage
+      .from(_attachmentsBucket)
+      .createSignedUrl(widget.message.attachmentPath!, 60 * 60);
+
+  Future<void> _open() async {
+    final opened = await launchUrl(
+      Uri.parse(await _signedUrl),
+      mode: .externalApplication,
+    );
+    if (!opened && mounted) {
+      context.showErrorSnackBar(message: 'Could not open the file.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final message = widget.message;
+    return InkWell(
+      onTap: _open,
+      child: message.hasImageAttachment
+          ? FutureBuilder(
+              future: _signedUrl,
+              builder: (context, snapshot) => ClipRRect(
+                borderRadius: .circular(4),
+                child: SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: snapshot.hasData
+                      ? Image.network(snapshot.data!, fit: .cover)
+                      : preloader,
+                ),
+              ),
+            )
+          : Row(
+              mainAxisSize: .min,
+              spacing: 8,
+              children: [
+                const Icon(Icons.insert_drive_file_outlined),
+                Flexible(child: Text(message.attachmentName ?? 'File')),
+              ],
+            ),
     );
   }
 }

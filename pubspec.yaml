@@ -10,11 +10,13 @@ environment:
   flutter: ">=3.47.0"
 
 dependencies:
+  file_picker: ^13.1.0
   flutter:
     sdk: flutter
 
   supabase_flutter: ^2.18.0
   timeago: ^3.7.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
