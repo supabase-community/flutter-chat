@@ -40,12 +40,12 @@ final appTheme = ThemeData.light().copyWith(
   inputDecorationTheme: InputDecorationTheme(
     floatingLabelStyle: const TextStyle(color: Colors.orange),
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: .circular(12),
       borderSide: const BorderSide(color: Colors.grey, width: 2),
     ),
     focusColor: Colors.orange,
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: .circular(12),
       borderSide: const BorderSide(color: Colors.orange, width: 2),
     ),
   ),
@@ -54,10 +54,7 @@ final appTheme = ThemeData.light().copyWith(
 /// Set of extension methods to easily display a snackbar
 extension ShowSnackBar on BuildContext {
   /// Displays a basic snackbar
-  void showSnackBar({
-    required String message,
-    Color backgroundColor = Colors.white,
-  }) {
+  void showSnackBar({required String message, Color? backgroundColor}) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: backgroundColor),
     );

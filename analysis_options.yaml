@@ -1,7 +1,11 @@
+include: package:flutter_lints/flutter.yaml
+
 analyzer:
   exclude:
     - build/**
     - android/**
     - ios/**
     - web/**
-include: package:flutter_lints/flutter.yaml
+
+formatter:
+  trailing_commas: preserve
